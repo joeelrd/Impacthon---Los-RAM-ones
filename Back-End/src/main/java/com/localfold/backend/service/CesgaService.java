@@ -87,4 +87,26 @@ public class CesgaService {
     public List<JobEntity> getJobHistory() {
         return jobRepository.findAllByOrderByCreatedAtDesc();
     }
+
+    public List getPredefinedProteins() {
+        String proteinsUrl = cesgaApiUrl + "/proteins/";
+        ResponseEntity<List> response = restTemplate.getForEntity(proteinsUrl, List.class);
+        return response.getBody();
+    }
+
+    public Map<String, Object> getProteinDetails(String proteinId) {
+        String proteinUrl = cesgaApiUrl + "/proteins/" + proteinId;
+        ResponseEntity<Map> response = restTemplate.getForEntity(proteinUrl, Map.class);
+        return response.getBody();
+    }
+
+    public Map<String, Object> getJobAccounting(String jobId) {
+        String accountingUrl = cesgaApiUrl + "/jobs/" + jobId + "/accounting";
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(accountingUrl, Map.class);
+            return response.getBody();
+        } catch (Exception e) {
+            return new HashMap<>(); // Return empty if not available
+        }
+    }
 }

@@ -27,5 +27,23 @@ export const api = {
     const response = await fetch(`${API_BASE}/jobs/history`);
     if (!response.ok) throw new Error('Error fetching history');
     return response.json();
+  },
+
+  async getProteins() {
+    const response = await fetch(`${API_BASE}/jobs/proteins`);
+    if (!response.ok) throw new Error('Error fetching proteins');
+    return response.json();
+  },
+
+  async getProteinDetails(proteinId: string) {
+    const response = await fetch(`${API_BASE}/jobs/proteins/${proteinId}`);
+    if (!response.ok) throw new Error('Error fetching protein details');
+    return response.json();
+  },
+
+  async getJobAccounting(jobId: string) {
+    const response = await fetch(`${API_BASE}/jobs/${jobId}/accounting`);
+    if (!response.ok) throw new Error('Error fetching accounting details');
+    return response.json();
   }
 };

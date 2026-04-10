@@ -1,17 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { Send, FileText, Clock } from 'lucide-react';
+import { Send, FileText, Clock, Search, Loader2 } from 'lucide-react';
 
-const SAMPLES = {
-  ubiquitin: ">sp|P0CG47|UBQ_HUMAN Ubiquitin\nMQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
-  calmodulin: ">sp|P0DP23|CALM1_HUMAN Calmodulin\nMADQLTEEQIAEFKEAFSLFDKDGDGTITTKELGTVMRSLGQNPTEAELQDMINEVDADGNGTIDFPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDEEVDEMIREADIDGDGQVNYEEFVQMMTAK",
-};
+interface PredefinedProtein {
+  protein_id: string;
+  protein_name: string;
+  category: string;
+}
 
 export default function JobSubmit() {
   const [fasta, setFasta] = useState('');
   const [loading, setLoading] = useState(false);
+  const [proteins, setProteins] = useState<PredefinedProtein[]>([]);
+  const [selectedProtein, setSelectedProtein] = useState('');
+  const [loadingProteins, setLoadingProteins] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function fetchProteins() {
+      try {
+        const data = await api.getProteins();
+        setProteins(data);
+      } catch (err) {
+        console.error("Error loading predefined proteins", err);
+      }
+    }
+    fetchProteins();
+  }, []);
+
+  const handleProteinSelect = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    setSelectedProtein(id);
+    if (!id) {
+      setFasta('');
+      return;
+    }
+    
+    setLoadingProteins(true);
+    try {
+      const details = await api.getProteinDetails(id);
+      if (details.fasta_ready) {
+        setFasta(details.fasta_ready);
+      }
+    } catch (err) {
+      console.error("Error fetching protein details", err);
+      alert("No se pudo cargar la secuencia de la proteína.");
+    } finally {
+      setLoadingProteins(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,14 +78,26 @@ export default function JobSubmit() {
         tu solicitud utilizando la potencia del supercomputador CESGA simulado.
       </p>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-        <button className="btn-secondary" onClick={() => setFasta(SAMPLES.ubiquitin)}>
-          Cargar Ubiquitina
-        </button>
-        <button className="btn-secondary" onClick={() => setFasta(SAMPLES.calmodulin)}>
-          Cargar Calmodulina
-        </button>
-        <button className="btn-secondary" onClick={() => setFasta('')}>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search size={18} style={{ position: 'absolute', top: '12px', left: '16px', color: 'var(--text-secondary)' }} />
+          <select 
+            className="input-styled" 
+            style={{ paddingLeft: '48px', cursor: 'pointer', appearance: 'none', background: 'var(--bg-card)' }}
+            value={selectedProtein}
+            onChange={handleProteinSelect}
+            disabled={loadingProteins}
+          >
+            <option value="">Selecciona una proteína predefinida del catálogo...</option>
+            {proteins.map(p => (
+              <option key={p.protein_id} value={p.protein_id}>
+                {p.protein_name} ({p.category})
+              </option>
+            ))}
+          </select>
+          {loadingProteins && <Loader2 size={18} className="animate-spin" style={{ position: 'absolute', top: '12px', right: '16px', color: 'var(--primary)' }} />}
+        </div>
+        <button type="button" className="btn-secondary" onClick={() => { setFasta(''); setSelectedProtein(''); }}>
           Limpiar
         </button>
       </div>

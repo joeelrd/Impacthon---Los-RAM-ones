@@ -39,4 +39,19 @@ public class JobController {
     public ResponseEntity<List<JobEntity>> getJobHistory() {
         return ResponseEntity.ok(cesgaService.getJobHistory());
     }
+
+    @GetMapping("/proteins")
+    public ResponseEntity<List> getPredefinedProteins() {
+        return ResponseEntity.ok(cesgaService.getPredefinedProteins());
+    }
+
+    @GetMapping("/proteins/{id}")
+    public ResponseEntity<Map<String, Object>> getProteinDetails(@PathVariable String id) {
+        return ResponseEntity.ok(cesgaService.getProteinDetails(id));
+    }
+
+    @GetMapping("/{id}/accounting")
+    public ResponseEntity<Map<String, Object>> getJobAccounting(@PathVariable String id) {
+        return ResponseEntity.ok(cesgaService.getJobAccounting(id));
+    }
 }
