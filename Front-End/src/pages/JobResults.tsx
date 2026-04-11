@@ -202,13 +202,23 @@ export default function JobResults() {
   };
 
   const handleSave = async () => {
-    if (!user?.id || !outputs || saving) return;
+    // Guard: must be logged in
+    if (!user?.id) {
+      setSaveErrorMsg('Debes iniciar sesión para guardar proteínas.');
+      return;
+    }
+    if (!outputs || saving) return;
     setSaving(true);
     setSaveErrorMsg(null);
     try {
+      const proteinName =
+        outputs.protein_metadata?.protein_name ||
+        outputs.structural_data?.protein_id ||
+        jobId ||
+        'Proteína guardada';
       const result = await api.saveProtein({
         userId: user.id,
-        proteinName: outputs.structural_data?.protein_id || jobId || 'Proteína guardada',
+        proteinName,
         pdbData: outputs.structural_data?.pdb_file || '',
         fastaSequence: sessionStorage.getItem(`fasta_cache_${jobId}`) || '',
         jobId: jobId,
@@ -219,12 +229,18 @@ export default function JobResults() {
       if (err.limitReached) {
         setLimitModal({ count: err.count, limit: err.limit, isPremium: err.isPremium });
       } else {
-        setSaveErrorMsg('No se pudo guardar la proteína. Inténtalo de nuevo.');
+        const msg = err?.message || 'Error desconocido';
+        setSaveErrorMsg(
+          msg.includes('404') || msg.includes('not found')
+            ? 'Usuario no encontrado en el servidor. Vuelve a iniciar sesión.'
+            : 'No se pudo guardar la proteína: ' + msg
+        );
       }
     } finally {
       setSaving(false);
     }
   };
+
 
   const handleUnsave = async () => {
     if (!savedProteinId || !user?.id) return;

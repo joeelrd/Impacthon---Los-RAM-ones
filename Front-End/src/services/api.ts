@@ -114,9 +114,13 @@ export const api = {
       const err = await response.json();
       throw Object.assign(new Error(err.message || 'Límite alcanzado'), { limitReached: true, ...err });
     }
-    if (!response.ok) throw new Error('Error al guardar proteína');
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      throw new Error(errBody.message || `Error ${response.status} al guardar proteína`);
+    }
     return response.json();
   },
+
 
   async deleteSavedProtein(id: number, userId: number) {
     const response = await fetch(`${API_BASE}/saved-proteins/${id}?userId=${userId}`, {

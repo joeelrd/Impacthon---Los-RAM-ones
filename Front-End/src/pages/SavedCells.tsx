@@ -33,7 +33,10 @@ export default function SavedCells() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setLoading(false); // Don't stay on loading if not logged in
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
@@ -41,17 +44,18 @@ export default function SavedCells() {
           api.getJobHistory(user.id),
           api.getSavedProteins(user.id)
         ]);
-        setJobs((jobsData || []).slice(0, 10)); // Mostrar solo 10 en el historial
+        setJobs(jobsData || []);
         setSavedProteins(proteinsData || []);
       } catch (err) {
-        console.error("Error al obtener datos", err);
-        setError("No se pudieron cargar los datos. Inténtalo de nuevo.");
+        console.error('Error al obtener datos', err);
+        setError('No se pudieron cargar los datos. Inténtalo de nuevo.');
       } finally {
         setLoading(false);
       }
     }
     fetchData();
   }, [user]);
+
 
   const handleDeleteSaved = async (id: number) => {
     if (!user?.id) return;
@@ -151,7 +155,14 @@ export default function SavedCells() {
         </button>
       </div>
 
-      {loading ? (
+      {!user ? (
+        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', borderRadius: '12px', padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <Activity size={48} opacity={0.4} style={{ marginBottom: '1rem', color: 'var(--accent-cyan)' }} />
+          <h3 style={{ color: '#fff', marginBottom: '0.5rem' }}>Inicia sesión para ver tu historial</h3>
+          <p>El historial de consultas es personal. Accede con tu cuenta para ver tus simulaciones previas.</p>
+          <Link to="/auth" className="btn-primary" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>Iniciar Sesión</Link>
+        </div>
+      ) : loading ? (
         <div style={{ textAlign: 'center', padding: '4rem 0' }}>
           <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite' }} />
           <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Cargando datos...</h3>
@@ -171,7 +182,9 @@ export default function SavedCells() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Mostrando las últimas 10 secuencias simuladas en el supercomputador CESGA.</p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+              Mostrando {jobs.length} secuencia{jobs.length !== 1 ? 's' : ''} simulada{jobs.length !== 1 ? 's' : ''} en el supercomputador CESGA para tu cuenta.
+            </p>
             {jobs.map((job) => (
               <Link key={job.id} to={`/jobs/${job.id}`} className="item-card" style={{ gridTemplateColumns: 'minmax(150px, 1fr) 2fr auto auto' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

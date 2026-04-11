@@ -88,7 +88,8 @@ public class CesgaService {
         if (userId != null) {
             return jobRepository.findByUserIdOrderByCreatedAtDesc(userId);
         }
-        return jobRepository.findAllByOrderByCreatedAtDesc();
+        // Never return all jobs from all users — require authentication
+        return List.of();
     }
 
     public List getPredefinedProteins() {
