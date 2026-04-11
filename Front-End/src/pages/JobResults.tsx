@@ -289,7 +289,7 @@ export default function JobResults() {
               {/* Distribución de residuos */}
               <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
-                  Calidad por Residuo
+                  Calidad por Residuo {confidence_data.plddt_per_residue && `(de los primeros ${confidence_data.plddt_per_residue.length} aminoácidos)`}
                 </div>
                 {[
                   { label: 'Muy Alta (>90)', val: confidence_data.plddt_histogram?.very_high || 0, color: '#3b82f6' },
