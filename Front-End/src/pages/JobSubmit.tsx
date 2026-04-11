@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { Send, FileText, Clock, Search, Loader2, AlertTriangle, X } from 'lucide-react';
 import BiologistGuide from '../components/BiologistGuide';
+import { useAuth } from '../context/AuthContext';
 
 interface PredefinedProtein {
   protein_id: string;
@@ -58,6 +59,7 @@ export default function JobSubmit() {
   const [loadingProteins, setLoadingProteins] = useState(false);
   const [errorModal, setErrorModal] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchProteins() {
@@ -100,7 +102,7 @@ export default function JobSubmit() {
     if (!fasta) return;
     setLoading(true);
     try {
-      const res = await api.submitJob(fasta, 'sequence.fasta');
+      const res = await api.submitJob(fasta, 'sequence.fasta', user?.id);
       if (res && res.job_id) {
         if (originalPdb) {
           sessionStorage.setItem(`pdb_cache_${res.job_id}`, originalPdb);

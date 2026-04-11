@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface JobRepository extends JpaRepository<JobEntity, String> {
     List<JobEntity> findAllByOrderByCreatedAtDesc();
+    List<JobEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

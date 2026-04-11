@@ -3,6 +3,7 @@ package com.localfold.backend.dto;
 public class JobSubmitRequest {
     private String fastaSequence;
     private String fastaFilename;
+    private Long userId;
 
     public String getFastaSequence() {
         return fastaSequence;
@@ -15,5 +16,11 @@ public class JobSubmitRequest {
     }
     public void setFastaFilename(String fastaFilename) {
         this.fastaFilename = fastaFilename;
+    }
+    public Long getUserId() {
+        return userId;
+    }
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

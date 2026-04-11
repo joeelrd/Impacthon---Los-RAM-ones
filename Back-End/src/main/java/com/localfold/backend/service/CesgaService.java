@@ -54,7 +54,7 @@ public class CesgaService {
             String status = (String) responseBody.get("status");
             
             // Save to local database
-            JobEntity job = new JobEntity(jobId, status, (String) body.get("fasta_filename"), LocalDateTime.now());
+            JobEntity job = new JobEntity(jobId, status, (String) body.get("fasta_filename"), LocalDateTime.now(), request.getUserId());
             jobRepository.save(job);
         }
         
@@ -84,7 +84,10 @@ public class CesgaService {
         return response.getBody();
     }
     
-    public List<JobEntity> getJobHistory() {
+    public List<JobEntity> getJobHistory(Long userId) {
+        if (userId != null) {
+            return jobRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        }
         return jobRepository.findAllByOrderByCreatedAtDesc();
     }
 

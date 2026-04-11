@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { Activity, LogOut, Sun, Moon } from 'lucide-react';
 import JobSubmit from './pages/JobSubmit';
 import JobResults from './pages/JobResults';
+import SavedCells from './pages/SavedCells';
 import Auth from './pages/Auth';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -69,6 +70,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><MainLayout><JobSubmit /></MainLayout></ProtectedRoute>} />
+            <Route path="/saved" element={<ProtectedRoute><MainLayout><SavedCells /></MainLayout></ProtectedRoute>} />
             <Route path="/jobs/:jobId" element={<ProtectedRoute><MainLayout><JobResults /></MainLayout></ProtectedRoute>} />
           </Routes>
         </div>

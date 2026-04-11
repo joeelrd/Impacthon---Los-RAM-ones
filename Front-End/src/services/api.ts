@@ -27,11 +27,11 @@ export const api = {
     return response.json();
   },
 
-  async submitJob(fastaSequence: string, fastaFilename: string) {
+  async submitJob(fastaSequence: string, fastaFilename: string, userId?: number) {
     const response = await fetch(`${API_BASE}/jobs/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fastaSequence, fastaFilename }),
+      body: JSON.stringify({ fastaSequence, fastaFilename, userId }),
     });
     if (!response.ok) throw new Error('Error submitting job');
     return response.json();
@@ -49,8 +49,9 @@ export const api = {
     return response.json();
   },
   
-  async getJobHistory() {
-    const response = await fetch(`${API_BASE}/jobs/history`);
+  async getJobHistory(userId?: number) {
+    const url = userId ? `${API_BASE}/jobs/history?userId=${userId}` : `${API_BASE}/jobs/history`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error('Error fetching history');
     return response.json();
   },

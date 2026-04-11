@@ -36,8 +36,8 @@ public class JobController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<JobEntity>> getJobHistory() {
-        return ResponseEntity.ok(cesgaService.getJobHistory());
+    public ResponseEntity<List<JobEntity>> getJobHistory(@RequestParam(required = false) Long userId) {
+        return ResponseEntity.ok(cesgaService.getJobHistory(userId));
     }
 
     @GetMapping("/proteins")

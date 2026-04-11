@@ -132,33 +132,104 @@ export default function JobResults() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
               {/* Panel Biológico */}
-              <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <h4 style={{ color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Activity size={18} /> Panel Biológico
                 </h4>
-
-                <div style={{ marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                    <span>Solubilidad</span>
-                    <span>{outputs.biological_data?.solubility_score?.toFixed(1) || 0}%</span>
+                
+                {/* Solubilidad e Inestabilidad */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Solubilidad</span>
+                      <span>{outputs.biological_data?.solubility_score?.toFixed(1) || 0}% 
+                        <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '4px' }}>
+                          ({outputs.biological_data?.solubility_prediction || 'N/A'})
+                        </span>
+                      </span>
+                    </div>
+                    <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
+                      <div style={{ width: `${outputs.biological_data?.solubility_score || 0}%`, background: 'var(--accent-cyan)', height: '100%', borderRadius: '3px' }}></div>
+                    </div>
                   </div>
-                  <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
-                    <div style={{ width: `${outputs.biological_data?.solubility_score || 0}%`, background: 'var(--accent-cyan)', height: '100%', borderRadius: '3px' }}></div>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Inestabilidad</span>
+                      <span>{outputs.biological_data?.instability_index?.toFixed(1) || 0} 
+                        <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '4px' }}>
+                          ({outputs.biological_data?.stability_status || 'N/A'})
+                        </span>
+                      </span>
+                    </div>
+                    <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
+                      <div style={{ width: `${Math.min(outputs.biological_data?.instability_index || 0, 100)}%`, background: outputs.biological_data?.stability_status === 'stable' ? '#10b981' : '#ef4444', height: '100%', borderRadius: '3px' }}></div>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                    <span>Alertas de Toxicidad</span>
-                    <span style={{ color: outputs.biological_data?.toxicity_alerts?.length ? '#ff7d45' : '#65cbf3' }}>
-                      {outputs.biological_data?.toxicity_alerts?.length || 0}
-                    </span>
-                  </div>
-                  {outputs.biological_data?.toxicity_alerts?.map((alert: string, i: number) => (
-                    <div key={i} style={{ fontSize: '0.8rem', color: '#ff7d45', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <AlertTriangle size={12} /> {alert}
+                {/* Proyección Estructural Secundaria */}
+                {outputs.biological_data?.secondary_structure_prediction && (
+                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Proyecciones Estructura Secundaria
                     </div>
-                  ))}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '50px', fontSize: '0.8rem', color: '#65cbf3' }}>Hélice</span>
+                        <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', height: '5px', borderRadius: '3px' }}>
+                          <div style={{ width: `${outputs.biological_data.secondary_structure_prediction.helix_percent}%`, background: '#65cbf3', height: '100%', borderRadius: '3px' }}></div>
+                        </div>
+                        <span style={{ width: '40px', textAlign: 'right', fontSize: '0.8rem' }}>{outputs.biological_data.secondary_structure_prediction.helix_percent}%</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '50px', fontSize: '0.8rem', color: '#10b981' }}>Hoja-β</span>
+                        <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', height: '5px', borderRadius: '3px' }}>
+                          <div style={{ width: `${outputs.biological_data.secondary_structure_prediction.strand_percent}%`, background: '#10b981', height: '100%', borderRadius: '3px' }}></div>
+                        </div>
+                        <span style={{ width: '40px', textAlign: 'right', fontSize: '0.8rem' }}>{outputs.biological_data.secondary_structure_prediction.strand_percent}%</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '50px', fontSize: '0.8rem', color: '#94a3b8' }}>Coil</span>
+                        <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', height: '5px', borderRadius: '3px' }}>
+                          <div style={{ width: `${outputs.biological_data.secondary_structure_prediction.coil_percent}%`, background: '#94a3b8', height: '100%', borderRadius: '3px' }}></div>
+                        </div>
+                        <span style={{ width: '40px', textAlign: 'right', fontSize: '0.8rem' }}>{outputs.biological_data.secondary_structure_prediction.coil_percent}%</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Alertas */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Alertas Toxicidad</span>
+                      <span style={{ color: outputs.biological_data?.toxicity_alerts?.length ? '#ff7d45' : '#10b981' }}>
+                        {outputs.biological_data?.toxicity_alerts?.length || 0}
+                      </span>
+                    </div>
+                    {outputs.biological_data?.toxicity_alerts?.map((alert: string, i: number) => (
+                      <div key={i} style={{ fontSize: '0.8rem', color: '#ff7d45', marginTop: '4px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                        <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '2px' }} /> <span style={{ lineHeight: '1.4' }}>{alert}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {outputs.biological_data?.allergenicity_alerts && outputs.biological_data.allergenicity_alerts.length > 0 && (
+                    <div style={{ paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Alertas Alergenicidad</span>
+                        <span style={{ color: '#facc15' }}>
+                          {outputs.biological_data.allergenicity_alerts.length}
+                        </span>
+                      </div>
+                      {outputs.biological_data.allergenicity_alerts.map((alert: string, i: number) => (
+                        <div key={i} style={{ fontSize: '0.8rem', color: '#facc15', marginTop: '4px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                          <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '2px' }} /> <span style={{ lineHeight: '1.4' }}>{alert}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
