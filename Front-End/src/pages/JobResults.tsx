@@ -434,7 +434,14 @@ export default function JobResults() {
             <Link to="/" style={{ display: 'flex', alignItems: 'center', color: 'var(--text-secondary)' }}>
               <ArrowLeft size={24} />
             </Link>
-            <h2 style={{ margin: 0, whiteSpace: 'nowrap' }}>Resultados Job: <span style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.9em' }}>{jobId}</span></h2>
+            <div>
+              <h2 style={{ margin: 0, color: '#fff', whiteSpace: 'nowrap', fontSize: '1.4rem' }}>
+                {outputs?.protein_metadata?.protein_name || outputs?.structural_data?.protein_id || (status === 'COMPLETED' ? 'Cargando resultados...' : 'Predicción en progreso...')}
+              </h2>
+              <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85em', marginTop: '4px' }}>
+                {jobId}
+              </div>
+            </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>

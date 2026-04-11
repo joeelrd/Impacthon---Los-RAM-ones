@@ -98,6 +98,7 @@ export default function JobSubmit() {
   const [originalPdb, setOriginalPdb] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -192,6 +193,12 @@ export default function JobSubmit() {
   }, {});
 
   const filteredGroups = Object.entries(groupedProteins).reduce<Record<string, PredefinedProtein[]>>((acc, [cat, ps]) => {
+    // 1. Filtrar por categoría (tipo de proteína) si hay una seleccionada
+    if (selectedCategoryFilter !== 'all' && cat !== selectedCategoryFilter) {
+      return acc;
+    }
+
+    // 2. Filtrar por texto de búsqueda
     const filtered = ps.filter(p =>
       !sidebarSearch ||
       p.protein_name.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
@@ -298,7 +305,24 @@ export default function JobSubmit() {
               placeholder="Buscar proteína..."
               value={sidebarSearch}
               onChange={e => setSidebarSearch(e.target.value)}
+              style={{ marginBottom: '8px' }}
             />
+            <div style={{ position: 'relative' }}>
+              <select
+                className="sidebar-search"
+                style={{ cursor: 'pointer', appearance: 'none', paddingRight: '28px', color: selectedCategoryFilter === 'all' ? 'var(--text-secondary)' : '#f8f8f2' }}
+                value={selectedCategoryFilter}
+                onChange={e => setSelectedCategoryFilter(e.target.value)}
+              >
+                <option value="all">Todas las categorías</option>
+                {Object.keys(groupedProteins).sort().map(cat => (
+                  <option key={cat} value={cat} style={{ color: '#0f172a' }}>{cat}</option>
+                ))}
+              </select>
+              <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-secondary)' }}>
+                <ChevronRight size={14} style={{ transform: 'rotate(90deg)' }} />
+              </div>
+            </div>
           </div>
 
           {/* Lista de proteínas */}
