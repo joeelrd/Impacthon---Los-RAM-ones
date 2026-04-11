@@ -78,6 +78,7 @@ export default function JobSubmit() {
     setSelectedProtein(id);
     if (!id) {
       setFasta('');
+      setOriginalPdb('');
       return;
     }
 
@@ -86,6 +87,24 @@ export default function JobSubmit() {
       const details = await api.getProteinDetails(id);
       if (details.fasta_ready) {
         setFasta(details.fasta_ready);
+      }
+      
+      // Prevent 'churro' rendering by loading the actual verified structure
+      if (details.pdb_id) {
+        try {
+          const pdbRes = await fetch(`https://files.rcsb.org/download/${details.pdb_id}.pdb`);
+          if (pdbRes.ok) {
+            const pdbText = await pdbRes.text();
+            setOriginalPdb(pdbText);
+          } else {
+            setOriginalPdb('');
+          }
+        } catch (err) {
+          console.warn("Failed to fetch PDB from RCSB", err);
+          setOriginalPdb('');
+        }
+      } else {
+        setOriginalPdb('');
       }
     } catch (err) {
       console.error("Error fetching protein details", err);
@@ -105,7 +124,7 @@ export default function JobSubmit() {
       const res = await api.submitJob(fasta, 'sequence.fasta', user?.id);
       if (res && res.job_id) {
         if (originalPdb) {
-          sessionStorage.setItem(`pdb_cache_${res.job_id}`, originalPdb);
+          localStorage.setItem(`pdb_cache_${res.job_id}`, originalPdb);
         }
         navigate(`/jobs/${res.job_id}`);
       }
@@ -239,7 +258,7 @@ export default function JobSubmit() {
             <Clock size={16} />
             <span>Tiempo extimado en cola: ~5s</span>
           </div>
-          <button type="submit" className="btn-primary" disabled={loading || !fasta.trim()}>
+          <button type="submit" className="btn-primary" disabled={loading || loadingProteins || !fasta.trim()}>
             {loading ? 'Submitting...' : <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Send size={18} /> Enviar Tarea</span>}
           </button>
         </div>

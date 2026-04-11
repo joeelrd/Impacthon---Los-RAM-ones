@@ -39,10 +39,9 @@ export default function JobResults() {
         // INTERCEPT: Si subimos un PDB real, usamos esa info geométrica 100% precisa
         // en lugar de la versión truncada o simulada que devuelve el supercomputador por defecto
         if (jobId) {
-          const cachedPdb = sessionStorage.getItem(`pdb_cache_${jobId}`);
+          const cachedPdb = localStorage.getItem(`pdb_cache_${jobId}`);
           if (cachedPdb && res.structural_data) {
             res.structural_data.pdb_file = cachedPdb;
-            // Opcional: podríamos limpiar el caché aquí, pero lo mantenemos por si el usuario recarga
           }
         }
 

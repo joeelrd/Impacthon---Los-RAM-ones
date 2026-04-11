@@ -33,8 +33,8 @@ export default function MoleculeViewer({ pdbData }: Props) {
           url: url,
           format: 'pdb'
         },
-        alphafoldView: true,
-        bgColor: { r: 10, g: 10, b: 15 }, // #0a0a0f backgroundColor match
+        alphafoldView: isSimulated, // Only use AlphaFold pLDDT coloring for simulated structures
+        bgColor: { r: 10, g: 10, b: 15 },
         hideControls: true,
         hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
         lighting: 'plastic',
