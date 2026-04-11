@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import MoleculeViewer from '../components/MoleculeViewer';
+import PAEMatrix from '../components/PAEMatrix';
 import ChatbotPanel from '../components/ChatbotPanel';
 import BiologistGuide from '../components/BiologistGuide';
 import GaiveReportModal from '../components/GaiveReportModal';
@@ -79,6 +80,13 @@ function calculateHPCImpact(accounting: any) {
   const estimatedCostEuros = (cpu_hours * 0.04) + (gpu_hours * 2.50);
 
   return { carbonFootprintGrams, estimatedCostEuros, energyKwh: energia_kwh };
+}
+
+function getPlddtColor(val: number) {
+  if (val >= 90) return '#3b82f6';
+  if (val >= 70) return '#38bdf8';
+  if (val >= 50) return '#eab308';
+  return '#f97316';
 }
 
 export default function JobResults() {
@@ -322,13 +330,6 @@ export default function JobResults() {
   const renderDataPanels = (biological_data: any, dataAccounting: any, confidence_data?: any) => {
     if (!biological_data && !dataAccounting && !confidence_data) return null;
 
-    const getPlddtColor = (val: number) => {
-      if (val >= 90) return '#3b82f6'; 
-      if (val >= 70) return '#38bdf8'; 
-      if (val >= 50) return '#eab308'; 
-      return '#f97316'; 
-    };
-
     // --- Criterio 5: Cálculos de FinOps y Sostenibilidad ---
     let gpuConsumo = dataAccounting?.gpu_hours || 0;
     if (gpuConsumo === 0 && dataAccounting?.total_wall_time_seconds) {
@@ -568,10 +569,61 @@ export default function JobResults() {
     );
   };
 
-  return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: compareMode ? 'column' : 'row', gap: '1.5rem', alignItems: compareMode ? 'stretch' : 'flex-start', width: '100%' }}>
+  const renderPaeSection = (confidence_data: any) => {
+    if (!confidence_data?.pae_matrix) return null;
 
-      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'stretch', flex: 1, minWidth: 0, width: '100%' }}>
+    return (
+      <div className="glass-panel" style={{ padding: '1.5rem', marginTop: '0.5rem' }}>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+          <Activity size={20} color="var(--accent-cyan)" /> Mapa de Error Alineado Esperado (PAE)
+        </h3>
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <PAEMatrix matrix={confidence_data.pae_matrix} size={350} />
+          
+          <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+              <p style={{ marginTop: 0 }}>
+                Esta matriz visualiza la confianza en la <strong>posición relativa</strong> de cada par de residuos (i, j). 
+              </p>
+              <ul style={{ paddingLeft: '1.2rem' }}>
+                <li>Las <span style={{ color: '#0053d6', fontWeight: 'bold' }}>regiones azules</span> indican que la IA confía en la posición relativa de esos bloques.</li>
+                <li>Las <span style={{ color: '#ff7d45', fontWeight: 'bold' }}>regiones claras/naranjas</span> sugieren que la orientación entre esos dominios es incierta.</li>
+              </ul>
+            </div>
+
+            {/* Cuadro de Insight Premium */}
+            <div style={{ 
+              position: 'relative',
+              background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.08), rgba(0, 120, 255, 0.05))',
+              padding: '16px', borderRadius: '12px', 
+              border: '1px solid rgba(0, 242, 254, 0.2)',
+              borderLeft: '4px solid var(--accent-cyan)',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                 <Zap size={14} color="var(--accent-cyan)" fill="var(--accent-cyan)" />
+                 <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent-cyan)' }}>
+                   Insight Estructural
+                 </span>
+              </div>
+              <p style={{ 
+                margin: 0, fontSize: '0.82rem', color: 'var(--text-primary)', 
+                fontStyle: 'italic', lineHeight: '1.5'
+              }}>
+                Fundamental para identificar dominios rígidos y conectores flexibles entre proteínas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+      
+      <div style={{ display: 'flex', flexDirection: compareMode ? 'column' : 'row', gap: '1.5rem', alignItems: compareMode ? 'stretch' : 'flex-start', width: '100%' }}>
+
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'stretch', flex: 1, minWidth: 0, width: '100%' }}>
 
       {/* PANEL PRINCIPAL IZQUIERDO */}
       <div className="glass-panel" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -586,8 +638,33 @@ export default function JobResults() {
               <h2 style={{ margin: 0, color: 'var(--text-primary)', whiteSpace: 'nowrap', fontSize: '1.4rem' }}>
                 {outputs?.protein_metadata?.protein_name || outputs?.structural_data?.protein_id || (status === 'COMPLETED' ? 'Cargando resultados...' : 'Predicción en progreso...')}
               </h2>
-              <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85em', marginTop: '4px' }}>
-                {jobId}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85em' }}>
+                  {jobId}
+                </div>
+                {outputs?.protein_metadata?.organism && (
+                  <div style={{
+                    fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px',
+                    background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)',
+                    display: 'flex', alignItems: 'center', gap: '4px'
+                  }}>
+                    <Database size={10} /> {outputs.protein_metadata.organism}
+                  </div>
+                )}
+                {outputs?.protein_metadata?.uniprot_id && (
+                  <a 
+                    href={`https://www.uniprot.org/uniprotkb/${outputs.protein_metadata.uniprot_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px',
+                      background: 'rgba(79, 172, 254, 0.1)', color: '#4facfe', border: '1px solid rgba(79, 172, 254, 0.2)',
+                      display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none'
+                    }}
+                  >
+                    <List size={10} /> UniProt: {outputs.protein_metadata.uniprot_id}
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -620,6 +697,7 @@ export default function JobResults() {
               </button>
             )}
             <BiologistGuide />
+            
             <div className={`badge status-${status.toLowerCase()}`}>{status}</div>
           </div>
         </div>
@@ -718,7 +796,9 @@ export default function JobResults() {
 
             {/* Paneles de Datos Renderizados */}
             {renderDataPanels(outputs.biological_data, accounting, outputs.structural_data?.confidence)}
-            {renderGlobalStatsPanel()}
+
+            {renderPaeSection(outputs.structural_data?.confidence)}
+
           </div>
         )}
       </div>
@@ -832,6 +912,7 @@ export default function JobResults() {
               {/* Paneles de Datos de la Comparación */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1 }}>
                 {renderDataPanels(compareOutputs.biological_data, compareAccounting, compareOutputs.structural_data?.confidence)}
+                {renderPaeSection(compareOutputs.structural_data?.confidence)}
                 
                 <div style={{ marginTop: 'auto' }}>
                   <button onClick={() => { setCompareStatus('IDLE'); setCompareFasta(''); }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
@@ -875,6 +956,9 @@ export default function JobResults() {
           }} />
         </div>
       )}
+      </div>
+
+      {renderGlobalStatsPanel()}
 
       {/* ── MODAL: LÍMITE DE SUSCRIPCIÓN ALCANZADO ── */}
       {limitModal && (
