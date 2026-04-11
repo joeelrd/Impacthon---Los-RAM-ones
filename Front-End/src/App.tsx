@@ -31,7 +31,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
       <header className="app-header glass-panel">
         <Link to="/" className="app-logo">
           <Activity color="#00f2fe" size={28} />
-          <span className="gradient-text">BioMolecules Inc</span>
+          <span className="gradient-text">LocalFold</span>
         </Link>
         <nav style={{ display: 'flex', alignItems: 'center' }}>
           <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} className="btn-secondary" style={{ marginRight: '1rem', padding: '8px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

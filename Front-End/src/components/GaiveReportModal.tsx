@@ -32,10 +32,10 @@ export default function GaiveReportModal({
   const ramaCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [steps, setSteps] = useState<Step[]>([
-    { id: 'rcsb',   label: 'Buscando molécula similar en RCSB PDB…',   status: 'pending' },
-    { id: 'rama',   label: 'Calculando Diagrama de Ramachandran…',      status: 'pending' },
-    { id: 'render', label: 'Capturando visualización 3D del visor…',   status: 'pending' },
-    { id: 'pdf',    label: 'Componiendo y exportando PDF académico…',   status: 'pending' },
+    { id: 'rcsb',   label: 'Buscando molécula similar en RCSB PDB...',   status: 'pending' },
+    { id: 'rama',   label: 'Calculando Diagrama de Ramachandran...',      status: 'pending' },
+    { id: 'render', label: 'Capturando visualización 3D del visor...',   status: 'pending' },
+    { id: 'pdf',    label: 'Componiendo y exportando PDF académico...',   status: 'pending' },
   ]);
 
   const [rcsbMeta, setRcsbMeta] = useState<RCSBMetadata | null>(null);
@@ -184,7 +184,7 @@ export default function GaiveReportModal({
               Informe GAIVE
             </h2>
             <p style={{ margin: 0, fontSize: '0.78rem', color: '#93c5fd' }}>
-              Validación Estructural · Job&nbsp;
+              Validación Estructural · Tarea&nbsp;
               <span style={{ fontFamily: 'monospace', color: '#bae6fd' }}>{jobId}</span>
             </p>
           </div>
@@ -311,9 +311,9 @@ export default function GaiveReportModal({
               <CheckCircle size={16} /> PDF generado y descargado correctamente
             </div>
           ) : error ? (
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Revisa la consola para más detalles.</span>
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Error al generar. Revisa la consola.</span>
           ) : (
-            <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Procesando, por favor espera…</span>
+            <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Procesando, por favor espera...</span>
           )}
           {done && (
             <button

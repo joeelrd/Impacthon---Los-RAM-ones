@@ -18,6 +18,16 @@ interface SavedProtein {
   savedAt: string;
 }
 
+const getStatusLabel = (status: string) => {
+  switch (status.toUpperCase()) {
+    case 'PENDING': return 'PENDIENTE';
+    case 'RUNNING': return 'EN EJECUCIÓN';
+    case 'COMPLETED': return 'COMPLETADO';
+    case 'FAILED': return 'FALLIDO';
+    default: return status;
+  }
+};
+
 export default function SavedCells() {
   const [activeTab, setActiveTab] = useState<'history' | 'saved'>('history');
   
@@ -144,7 +154,7 @@ export default function SavedCells() {
           className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
           onClick={() => setActiveTab('history')}
         >
-          <Activity size={18} /> Historial de Jobs
+          <Activity size={18} /> Historial de Tareas
         </button>
         <button 
           className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`}
@@ -183,7 +193,7 @@ export default function SavedCells() {
             {jobs.map((job) => (
               <Link key={job.id} to={`/jobs/${job.id}`} className="item-card" style={{ gridTemplateColumns: 'minmax(150px, 1fr) 2fr auto auto' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Job ID</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>ID de Tarea</span>
                   <span style={{ color: 'var(--text-primary)', fontWeight: '500', fontFamily: 'monospace' }}>{job.id}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -195,7 +205,7 @@ export default function SavedCells() {
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{new Date(job.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
                 <div className={getStatusBadgeClass(job.status)} style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '130px', justifyContent: 'center' }}>
-                  {getStatusIcon(job.status)} {job.status}
+                  {getStatusIcon(job.status)} {getStatusLabel(job.status)}
                 </div>
               </Link>
             ))}
@@ -237,7 +247,7 @@ export default function SavedCells() {
                 
                 {protein.jobId && (
                    <button onClick={() => navigate(`/jobs/${protein.jobId}`)} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                     Ver Job
+                     Ver Tarea
                    </button>
                 )}
                 

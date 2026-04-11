@@ -50,7 +50,7 @@ export default function Auth() {
       } else {
         const res = await api.register({ name, email, password });
         login(res);
-        setSuccessMsg('¡Cuenta registrada correctamente! Bienvenid@ a BioMolecules Inc.');
+        setSuccessMsg('¡Cuenta registrada correctamente! Bienvenid@ a LocalFold.');
         setTimeout(() => { navigate('/'); }, 2800);
       }
     } catch (err: any) {
@@ -103,7 +103,7 @@ export default function Auth() {
           transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}>
           <h1 style={{ fontSize: '3.6rem', fontWeight: 800, marginBottom: '1.5rem', background: 'linear-gradient(135deg, #00f2fe, #4facfe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.15' }}>
-            Bienvenido a BioMolecules Inc
+            Bienvenido a LocalFold
           </h1>
           <p style={{ fontSize: '1.3rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
             La plataforma definitiva para la predicción de estructuras de proteínas y el análisis biomédico in-silico.
@@ -124,12 +124,15 @@ export default function Auth() {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2.5rem' }}>
-          <Activity color="#00f2fe" size={56} style={{ marginBottom: '1rem' }} />
+          <Link to="/" className="app-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', marginBottom: '1rem' }}>
+            <Activity color="#00f2fe" size={28} />
+            <span className="gradient-text" style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white' }}>LocalFold</span>
+          </Link>
           <h2 style={{ fontSize: '2.2rem', fontWeight: 700, color: 'white', marginBottom: '0.6rem' }}>
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', textAlign: 'center' }}>
-            {isLogin ? 'Accede para procesar nuevas estructuras 3D.' : 'Únete a BioMolecules Inc y acelera tus descubrimientos in-silico.'}
+            {isLogin ? 'Accede para procesar nuevas estructuras 3D.' : 'Únete a LocalFold y acelera tus descubrimientos in-silico.'}
           </p>
         </div>
 
