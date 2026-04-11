@@ -66,8 +66,8 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
     a: ({node, ...props}: any) => <a style={{ color: 'var(--accent-cyan)', textDecoration: 'none' }} {...props} />,
     code: ({node, inline, ...props}: any) => (
       inline ? 
-      <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.85em', color: '#ff7d45' }} {...props} /> :
-      <pre style={{ background: 'rgba(0,0,0,0.4)', padding: '12px', borderRadius: '8px', overflowX: 'auto', marginBottom: '10px', fontSize: '0.9em' }}>
+      <code style={{ background: 'var(--bg-surface-hover)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '0.85em', color: '#ff7d45' }} {...props} /> :
+      <pre style={{ background: 'var(--bg-color-main)', padding: '12px', borderRadius: '8px', overflowX: 'auto', marginBottom: '10px', fontSize: '0.9em' }}>
         <code style={{ fontFamily: 'monospace' }} {...props} />
       </pre>
     ),
@@ -75,11 +75,11 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
     ol: ({node, ...props}: any) => <ol style={{ paddingLeft: '20px', margin: '0 0 10px 0' }} {...props} />,
     li: ({node, ...props}: any) => <li style={{ marginBottom: '4px' }} {...props} />,
     h1: ({node, ...props}: any) => <h1 style={{ fontSize: '1.4em', marginBottom: '12px', color: 'var(--accent-cyan)' }} {...props} />,
-    h2: ({node, ...props}: any) => <h2 style={{ fontSize: '1.2em', marginBottom: '10px', color: '#e0e0f0' }} {...props} />,
-    h3: ({node, ...props}: any) => <h3 style={{ fontSize: '1.1em', marginBottom: '8px', color: '#e0e0f0' }} {...props} />,
+    h2: ({node, ...props}: any) => <h2 style={{ fontSize: '1.2em', marginBottom: '10px', color: 'var(--text-primary)' }} {...props} />,
+    h3: ({node, ...props}: any) => <h3 style={{ fontSize: '1.1em', marginBottom: '8px', color: 'var(--text-primary)' }} {...props} />,
     table: ({node, ...props}: any) => <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '10px' }} {...props} /></div>,
-    th: ({node, ...props}: any) => <th style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', padding: '8px', textAlign: 'left', color: 'var(--accent-cyan)' }} {...props} />,
-    td: ({node, ...props}: any) => <td style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '8px' }} {...props} />
+    th: ({node, ...props}: any) => <th style={{ borderBottom: '1px solid var(--border-color)', padding: '8px', textAlign: 'left', color: 'var(--accent-cyan)' }} {...props} />,
+    td: ({node, ...props}: any) => <td style={{ borderBottom: '1px solid var(--border-color)', padding: '8px' }} {...props} />
   };
 
   return (
@@ -87,21 +87,21 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
       display: 'flex',
       flexDirection: 'column',
       height: '700px',
-      background: 'linear-gradient(135deg, rgba(20,20,30,0.85) 0%, rgba(15,15,25,0.95) 100%)',
+      background: 'var(--bg-surface)',
       borderRadius: '16px',
-      border: '1px solid rgba(101, 203, 243, 0.2)',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 16px rgba(101, 203, 243, 0.05)',
+      border: '1px solid var(--border-color)',
+      boxShadow: 'var(--glass-shadow)',
       backdropFilter: 'blur(12px)',
       overflow: 'hidden'
     }}>
       {/* Header */}
       <div style={{
         padding: '16px 20px',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        background: 'rgba(255,255,255,0.02)'
+        background: 'var(--bg-surface-hover)'
       }}>
         <div style={{
           width: '36px', height: '36px', borderRadius: '10px',
@@ -112,7 +112,7 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
           <Bot size={20} color="#fff" />
         </div>
         <div>
-          <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>Gemini IA</h3>
+          <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 600, letterSpacing: '0.5px' }}>Gemini IA</h3>
           <span style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block', boxShadow: '0 0 8px var(--accent-cyan)' }}></span>
             Conectado al contexto
@@ -154,9 +154,9 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
                 ? 'linear-gradient(135deg, rgba(101,203,243,0.15), rgba(0,83,214,0.15))' 
                 : 'var(--bg-color-main)',
               border: '1px solid',
-              borderColor: msg.sender === 'user' ? 'rgba(101,203,243,0.3)' : 'rgba(255,255,255,0.05)',
+              borderColor: msg.sender === 'user' ? 'rgba(101,203,243,0.3)' : 'var(--border-color)',
               boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-              color: '#fff',
+              color: 'var(--text-primary)',
               fontSize: '0.95rem'
             }}>
               {msg.sender === 'ai' ? (
@@ -171,11 +171,11 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
             {msg.sender === 'user' && (
               <div style={{
                 width: '28px', height: '28px', borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.1)',
+                background: 'var(--bg-surface-hover)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, marginTop: '4px'
               }}>
-                <User size={16} color="#ccc" />
+                <User size={16} color="var(--text-secondary)" />
               </div>
             )}
           </div>
@@ -194,7 +194,7 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
               <div style={{
                 padding: '16px', borderRadius: '18px 18px 18px 0',
                 background: 'var(--bg-color-main)',
-                border: '1px solid rgba(255,255,255,0.05)',
+                border: '1px solid var(--border-color)',
                 color: 'var(--accent-cyan)',
                 display: 'flex', alignItems: 'center', gap: '8px'
               }}>
@@ -210,8 +210,8 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
       {/* Input Area */}
       <div style={{
         padding: '16px',
-        background: 'rgba(10,10,15,0.6)',
-        borderTop: '1px solid rgba(255,255,255,0.05)'
+        background: 'var(--bg-surface-hover)',
+        borderTop: '1px solid var(--border-color)'
       }}>
         <form onSubmit={handleSend} style={{ display: 'flex', gap: '12px' }}>
           <input
@@ -222,17 +222,17 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
             disabled={isLoading}
             style={{
               flex: 1,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'var(--bg-color-main)',
+              border: '1px solid var(--border-color)',
               borderRadius: '24px',
               padding: '12px 20px',
-              color: '#fff',
+              color: 'var(--text-primary)',
               fontSize: '0.95rem',
               outline: 'none',
               transition: 'all 0.2s',
             }}
             onFocus={(e) => e.target.style.borderColor = 'var(--accent-cyan)'}
-            onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+            onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
           />
           <button
             type="submit"
@@ -241,14 +241,14 @@ export default function ChatbotPanel({ context }: ChatbotPanelProps) {
               width: '46px',
               height: '46px',
               borderRadius: '50%',
-              background: input.trim() && !isLoading ? 'linear-gradient(135deg, var(--accent-cyan), #0053d6)' : 'rgba(255,255,255,0.1)',
-              border: 'none',
+              background: input.trim() && !isLoading ? 'linear-gradient(135deg, var(--accent-cyan), #0053d6)' : 'var(--bg-color-main)',
+              border: '1px solid var(--border-color)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: input.trim() && !isLoading ? 'pointer' : 'not-allowed',
               transition: 'all 0.2s',
-              color: input.trim() && !isLoading ? '#fff' : 'rgba(255,255,255,0.3)',
+              color: input.trim() && !isLoading ? '#fff' : 'var(--text-secondary)',
               boxShadow: input.trim() && !isLoading ? '0 4px 15px rgba(101, 203, 243, 0.4)' : 'none'
             }}
           >

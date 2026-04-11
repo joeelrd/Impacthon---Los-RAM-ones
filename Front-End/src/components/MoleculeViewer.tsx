@@ -95,6 +95,15 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
   const viewerRef = useRef<HTMLDivElement>(null);
   const viewerInstance = useRef<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(() => document.body.classList.contains('light-mode'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsLightMode(document.body.classList.contains('light-mode'));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -149,7 +158,7 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
           format: format
         },
         alphafoldView: true, // Always force AlphaFold view so it uses the standard confidence colors!
-        bgColor: { r: 10, g: 10, b: 15 }, // #0a0a0f backgroundColor match
+        bgColor: isLightMode ? { r: 244, g: 246, b: 249 } : { r: 10, g: 10, b: 15 }, // matches css var(--bg-color-main)
         hideControls: true,
         // Ocultamos el 'expand' nativo de Molstar para usar el nuestro de HTML5
         hideCanvasControls: ['expand', 'selection', 'animation', 'controlToggle', 'controlInfo'],
@@ -200,7 +209,7 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
         if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
       }, 1000);
     };
-  }, [pdbData]);
+  }, [pdbData, isLightMode]);
 
   return (
     <div
@@ -213,7 +222,7 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
         position: 'relative',
         borderRadius: '8px',
         overflow: 'hidden',
-        backgroundColor: '#0a0a0f'
+        backgroundColor: 'var(--bg-color-main)'
       }}
     >
       {/* Container for PDBe Molstar */}
@@ -230,10 +239,10 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
           bottom: '16px',
           right: '16px',
           zIndex: 20,
-          background: 'rgba(20,20,30,0.8)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-color)',
           borderRadius: '8px',
-          color: '#fff',
+          color: 'var(--text-primary)',
           padding: '8px',
           cursor: 'pointer',
           backdropFilter: 'blur(4px)',
@@ -243,8 +252,8 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
           transition: 'all 0.2s ease'
         }}
         title="Pantalla Completa Real"
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,172,254,0.3)'}
-        onMouseLeave={e => e.currentTarget.style.background = 'rgba(20,20,30,0.8)'}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface-hover)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-surface)'}
       >
         {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
       </button>
@@ -254,16 +263,17 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
         position: 'absolute',
         top: '16px',
         left: '16px',
-        backgroundColor: 'rgba(20, 20, 30, 0.8)',
+        backgroundColor: 'var(--bg-surface)',
         backdropFilter: 'blur(4px)',
         padding: '12px',
         borderRadius: '8px',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        border: '1px solid var(--border-color)',
         zIndex: 10,
         pointerEvents: 'none',
-        fontSize: '0.85rem'
+        fontSize: '0.85rem',
+        color: 'var(--text-secondary)'
       }}>
-        <strong style={{ display: 'block', marginBottom: '8px', color: '#fff' }}>pLDDT Confianza:</strong>
+        <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--text-primary)' }}>pLDDT Confianza:</strong>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
           <span style={{ width: '12px', height: '12px', backgroundColor: '#0053d6', borderRadius: '2px' }}></span>
           <span>&gt; 90 (Muy Alta)</span>

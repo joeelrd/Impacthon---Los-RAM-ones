@@ -98,7 +98,7 @@ export default function SavedCells() {
           align-items: center;
           gap: 8px;
         }
-        .tab-btn:hover { color: #fff; }
+        .tab-btn:hover { color: var(--text-primary); }
         .tab-btn.active {
           color: var(--accent-cyan);
           border-bottom: 3px solid var(--accent-cyan);
@@ -126,7 +126,7 @@ export default function SavedCells() {
           <Link to="/" style={{ display: 'flex', alignItems: 'center', color: 'var(--text-secondary)' }}>
             <ArrowLeft size={24} />
           </Link>
-          <h1 className="gradient-text" style={{ fontSize: '2.2rem', margin: 0 }}>Mis Células</h1>
+          <h1 className="gradient-text" style={{ fontSize: '2.2rem', margin: 0 }}>Mis Moléculas</h1>
         </div>
       </div>
       
@@ -165,7 +165,7 @@ export default function SavedCells() {
         jobs.length === 0 ? (
           <div style={{ background: 'var(--bg-surface)', borderRadius: '12px', padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-secondary)', border: '1px dashed #334155' }}>
             <FileText size={48} opacity={0.3} style={{ marginBottom: '1rem' }} />
-            <h3>Aún no tienes células procesadas</h3>
+            <h3>Aún no tienes moléculas procesadas</h3>
             <p>Tus simulaciones aparecerán aquí una vez que envíes tu primer trabajo.</p>
             <Link to="/" className="btn-primary" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>Nueva Consulta</Link>
           </div>
@@ -176,7 +176,7 @@ export default function SavedCells() {
               <Link key={job.id} to={`/jobs/${job.id}`} className="item-card" style={{ gridTemplateColumns: 'minmax(150px, 1fr) 2fr auto auto' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Job ID</span>
-                  <span style={{ color: '#fff', fontWeight: '500', fontFamily: 'monospace' }}>{job.id}</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: '500', fontFamily: 'monospace' }}>{job.id}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <FileText size={16} color="var(--accent-cyan)" />
@@ -217,7 +217,7 @@ export default function SavedCells() {
                     <Bookmark size={18} color="#00f2fe" />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ color: '#fff', fontWeight: '500' }}>{protein.proteinName}</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{protein.proteinName}</span>
                     {protein.jobId && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>Origen: {protein.jobId}</span>}
                   </div>
                 </div>

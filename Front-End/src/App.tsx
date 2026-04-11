@@ -15,9 +15,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, logout } = useAuth();
-  const [theme, setTheme] = React.useState('dark');
+  const [theme, setTheme] = React.useState(() => localStorage.getItem('localfold_theme') || 'dark');
 
   React.useEffect(() => {
+    localStorage.setItem('localfold_theme', theme);
     if (theme === 'light') {
       document.body.classList.add('light-mode');
     } else {
@@ -30,7 +31,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
       <header className="app-header glass-panel">
         <Link to="/" className="app-logo">
           <Activity color="#00f2fe" size={28} />
-          <span className="gradient-text">LocalFold</span>
+          <span className="gradient-text">BioMolecules Inc</span>
         </Link>
         <nav style={{ display: 'flex', alignItems: 'center' }}>
           <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} className="btn-secondary" style={{ marginRight: '1rem', padding: '8px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -39,12 +40,12 @@ function MainLayout({ children }: { children: React.ReactNode }) {
           
           {isAuthenticated && (
             <>
-              <Link to="/saved" className="btn-secondary" style={{ marginRight: '1rem', border: 'none' }}>
-                Mis Células
-              </Link>
               <span style={{ color: 'var(--text-secondary)', marginRight: '1rem', fontSize: '0.9rem' }}>
                 Hola, {user?.name.split(' ')[0]}
               </span>
+              <Link to="/saved" className="btn-secondary" style={{ marginRight: '1rem', border: 'none' }}>
+                Mis Moléculas
+              </Link>
               <Link to="/" className="btn-secondary" style={{ marginRight: '1rem', border: 'none' }}>
                 Nueva Consulta
               </Link>

@@ -97,7 +97,7 @@ function miniHeader(doc: jsPDF, jobId: string) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   st(doc, [180, 210, 255]);
-  doc.text('GAIVE · LocalFold', M, 6);
+  doc.text('GAIVE · BioMolecules Inc', M, 6);
   st(doc, [148, 180, 220]);
   doc.setFont('helvetica', 'normal');
   doc.text('Job: ' + jobId, W - M, 6, { align: 'right' });
@@ -343,7 +343,7 @@ export async function generateGAIVEReport(input: GAIVEReportInput): Promise<void
   st(doc, [180,210,240]);
   doc.text('Generación Autonómica de Informes de Validación Estructural', M, 22);
   st(doc, [120,160,210]);
-  doc.text('LocalFold · CESGA Finisterrae III', W-M, 22, { align: 'right' });
+  doc.text('BioMolecules Inc · CESGA Finisterrae III', W-M, 22, { align: 'right' });
 
   let y = 42;
 
@@ -563,8 +563,8 @@ export async function generateGAIVEReport(input: GAIVEReportInput): Promise<void
   doc.setFont('helvetica','normal'); doc.setFontSize(8); st(doc, C.textSub);
   doc.text(pageUrl, M, y+17);
   doc.setFontSize(7.5); st(doc,C.textMuted);
-  doc.text('Escanea el QR para revisar el modelo de forma interactiva en LocalFold.', M, y+24);
-  doc.text('© LocalFold · GAIVE Platform · Datos: RCSB PDB (https://www.rcsb.org)', M, y+31);
+  doc.text('Escanea el QR para revisar el modelo de forma interactiva en BioMolecules Inc.', M, y+24);
+  doc.text('© BioMolecules Inc · GAIVE Platform · Datos: RCSB PDB (https://www.rcsb.org)', M, y+31);
   doc.text('Generado: '+formatDate(now), M, y+38);
 
   doc.save('GAIVE_'+jobId+'_'+now.toISOString().substring(0,10)+'.pdf');

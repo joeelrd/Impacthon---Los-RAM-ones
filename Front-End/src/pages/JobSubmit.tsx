@@ -296,7 +296,7 @@ export default function JobSubmit() {
                 <Dna size={16} color="#00f2fe" />
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#fff' }}>Catálogo</div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>Catálogo</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Proteínas predefinidas</div>
               </div>
             </div>
@@ -373,7 +373,7 @@ export default function JobSubmit() {
                               }
                             }}
                           >
-                            <span style={{ fontSize: '0.83rem', color: isSelected ? '#fff' : 'var(--text-secondary)', fontWeight: isSelected ? 600 : 400, lineHeight: '1.3', flex: 1 }}>
+                            <span style={{ fontSize: '0.83rem', color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: isSelected ? 600 : 400, lineHeight: '1.3', flex: 1 }}>
                               {p.protein_name}
                             </span>
                             {isLoading
@@ -442,7 +442,7 @@ export default function JobSubmit() {
                 background: style.bg, border: `1px solid ${style.border}`,
               }}>
                 <Dna size={16} style={{ color: style.text, flexShrink: 0 }} />
-                <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 500 }}>{p.protein_name}</span>
+                <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 500 }}>{p.protein_name}</span>
                 <span style={{ fontSize: '0.75rem', color: style.text, background: `${style.bg}`, border: `1px solid ${style.border}`, borderRadius: '20px', padding: '2px 8px', marginLeft: 'auto' }}>{p.category}</span>
               </div>
             );

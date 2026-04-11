@@ -50,7 +50,7 @@ export default function Auth() {
       } else {
         const res = await api.register({ name, email, password });
         login(res);
-        setSuccessMsg('¡Cuenta registrada correctamente! Bienvenid@ a LocalFold.');
+        setSuccessMsg('¡Cuenta registrada correctamente! Bienvenid@ a BioMolecules Inc.');
         setTimeout(() => { navigate('/'); }, 2800);
       }
     } catch (err: any) {
@@ -103,7 +103,7 @@ export default function Auth() {
           transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}>
           <h1 style={{ fontSize: '3.6rem', fontWeight: 800, marginBottom: '1.5rem', background: 'linear-gradient(135deg, #00f2fe, #4facfe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.15' }}>
-            Bienvenido a LocalFold
+            Bienvenido a BioMolecules Inc
           </h1>
           <p style={{ fontSize: '1.3rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
             La plataforma definitiva para la predicción de estructuras de proteínas y el análisis biomédico in-silico.
@@ -129,7 +129,7 @@ export default function Auth() {
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', textAlign: 'center' }}>
-            {isLogin ? 'Accede para procesar nuevas estructuras 3D.' : 'Únete a LocalFold y acelera tus descubrimientos in-silico.'}
+            {isLogin ? 'Accede para procesar nuevas estructuras 3D.' : 'Únete a BioMolecules Inc y acelera tus descubrimientos in-silico.'}
           </p>
         </div>
 
@@ -173,14 +173,14 @@ export default function Auth() {
             />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.6rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Correo Electrónico</label>
+            <label style={{ display: 'block', marginBottom: '0.6rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Nombre de usuario / Correo electrónico</label>
             <input 
               autoComplete="off"
-              type="email" 
+              type="text" 
               value={email} 
               onChange={e => setEmail(e.target.value)} 
               style={{ width: '100%', padding: '14px 16px', fontSize: '1rem', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', color: 'white', outline: 'none' }} 
-              placeholder="bioclient@instituto.org"
+              placeholder="usuario o correo electrónico"
             />
           </div>
           <div>

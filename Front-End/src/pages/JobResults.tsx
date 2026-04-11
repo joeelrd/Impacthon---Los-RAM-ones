@@ -410,9 +410,9 @@ export default function JobResults() {
         {/* HPC Contabilidad & Sostenibilidad (AWS Billing Style) */}
         {dataAccounting && (
           <div style={{
-            background: 'linear-gradient(145deg, #111827, #0f172a)',
-            padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)'
+            background: 'var(--bg-surface)',
+            padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)',
+            boxShadow: 'var(--glass-shadow)'
           }}>
             <h4 style={{ color: '#94a3b8', margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>
               <Cpu size={16} /> FinOps & Sostenibilidad HPC
@@ -422,13 +422,13 @@ export default function JobResults() {
             <div style={{ display: 'grid', gap: '1rem' }}>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.9rem' }}>
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #3b82f6' }}>
-                  <div style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '2px' }}>Uso CPU</div>
-                  <div style={{ fontWeight: '500', color: '#e2e8f0' }}>{((dataAccounting?.cpu_hours || 0) * 3600).toFixed(1)} s</div>
+                <div style={{ background: 'var(--bg-surface-hover)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #3b82f6' }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '2px' }}>Uso CPU</div>
+                  <div style={{ fontWeight: '500', color: 'var(--text-primary)' }}>{((dataAccounting?.cpu_hours || 0) * 3600).toFixed(1)} s</div>
                 </div>
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-cyan)' }}>
-                  <div style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '2px' }}>Uso GPU (A100)</div>
-                  <div style={{ fontWeight: '600', color: '#e2e8f0' }}>{(gpuConsumo * 3600).toFixed(1)} s</div>
+                <div style={{ background: 'var(--bg-surface-hover)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-cyan)' }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '2px' }}>Uso GPU (A100)</div>
+                  <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{(gpuConsumo * 3600).toFixed(1)} s</div>
                 </div>
               </div>
 
@@ -505,7 +505,7 @@ export default function JobResults() {
               <ArrowLeft size={24} />
             </Link>
             <div>
-              <h2 style={{ margin: 0, color: '#fff', whiteSpace: 'nowrap', fontSize: '1.4rem' }}>
+              <h2 style={{ margin: 0, color: 'var(--text-primary)', whiteSpace: 'nowrap', fontSize: '1.4rem' }}>
                 {outputs?.protein_metadata?.protein_name || outputs?.structural_data?.protein_id || (status === 'COMPLETED' ? 'Cargando resultados...' : 'Predicción en progreso...')}
               </h2>
               <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85em', marginTop: '4px' }}>
