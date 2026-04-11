@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { Send, FileText, Clock, Loader2, AlertTriangle, X, Dna, ChevronRight, Sparkles, Crown, Trash2 } from 'lucide-react';
 import BiologistGuide from '../components/BiologistGuide';
@@ -100,7 +100,15 @@ export default function JobSubmit() {
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (location.state && location.state.fastaToLoad) {
+      setFasta(location.state.fastaToLoad);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     async function fetchProteins() {
