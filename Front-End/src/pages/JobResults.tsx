@@ -281,7 +281,7 @@ export default function JobResults() {
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
                   Fiabilidad Media
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '50%', width: '110px', height: '110px', border: `4px solid ${getPlddtColor(confidence_data.plddt_mean || 0)}` }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', borderRadius: '50%', width: '110px', height: '110px', border: `4px solid ${getPlddtColor(confidence_data.plddt_mean || 0)}` }}>
                   <span style={{ fontSize: '2.2rem', fontWeight: 800, color: getPlddtColor(confidence_data.plddt_mean || 0) }}>
                     {confidence_data.plddt_mean?.toFixed(1) || 0}
                   </span>
@@ -357,7 +357,7 @@ export default function JobResults() {
             </div>
           </div>
           {biological_data?.secondary_structure_prediction && (
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px' }}>
+            <div style={{ background: 'var(--bg-surface-hover)', padding: '12px', borderRadius: '8px' }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Estructura Secundaria
               </div>
