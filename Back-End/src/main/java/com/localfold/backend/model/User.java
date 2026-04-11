@@ -1,6 +1,9 @@
 package com.localfold.backend.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
@@ -17,6 +20,13 @@ public class User {
 
     @Column(nullable = false)
     public String password; // Para simplificar dejaremos acceso para el controlador. Getters/Setters generados habitualmente.
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isPremium = false;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<SavedProteinEntity> savedProteins = new ArrayList<>();
 
     public User() {}
 
@@ -37,4 +47,10 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public boolean isPremium() { return isPremium; }
+    public void setPremium(boolean isPremium) { this.isPremium = isPremium; }
+
+    public List<SavedProteinEntity> getSavedProteins() { return savedProteins; }
+    public void setSavedProteins(List<SavedProteinEntity> savedProteins) { this.savedProteins = savedProteins; }
 }
