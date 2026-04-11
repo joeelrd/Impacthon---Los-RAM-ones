@@ -11,7 +11,7 @@ import {
   ShieldCheck, Activity, Cpu, ArrowLeft, Download, AlertTriangle,
   Bookmark, BookmarkCheck, X, Crown, Trash2, Loader2,
   SplitSquareHorizontal, Send, Leaf, CircleDollarSign, Zap, FileText,
-  Database, List
+  ExternalLink, Globe, Database, FlaskConical, List
 } from 'lucide-react';
 
 interface LimitInfo {
@@ -122,6 +122,10 @@ export default function JobResults() {
   const [compareOutputs, setCompareOutputs] = useState<any>(null);
   const [compareAccounting, setCompareAccounting] = useState<any>(null);
   const [compareLoading, setCompareLoading] = useState(false);
+  const [compareSaved, setCompareSaved] = useState(false);
+  const [compareSaving, setCompareSaving] = useState(false);
+  const [compareSavedId, setCompareSavedId] = useState<number | null>(null);
+  const [compareDeleteConfirm, setCompareDeleteConfirm] = useState(false);
 
   const submitCompare = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,6 +269,58 @@ export default function JobResults() {
       setSaveErrorMsg('No se pudo eliminar la proteína guardada.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // --- Handlers para el Modelo Secundario ---
+  const handleCompareDownload = () => {
+    if (!compareOutputs?.structural_data?.pdb_file) return;
+    const isCIF = compareOutputs.structural_data.pdb_file.trim().startsWith('data_');
+    const extension = isCIF ? 'cif' : 'pdb';
+    const blob = new Blob([compareOutputs.structural_data.pdb_file], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `compare_${compareJobId}.${extension}`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  };
+
+  const handleCompareSave = async () => {
+    if (!user?.id || !compareOutputs || compareSaving) return;
+    setCompareSaving(true);
+    setSaveErrorMsg(null);
+    try {
+      const result = await api.saveProtein({
+        userId: user.id,
+        proteinName: `Comparación: ${compareOutputs.structural_data?.protein_id || compareJobId || 'Secuencia'}`,
+        pdbData: compareOutputs.structural_data?.pdb_file || '',
+        fastaSequence: compareFasta || '',
+        jobId: compareJobId || undefined,
+      });
+      setCompareSaved(true);
+      setCompareSavedId(result.id);
+    } catch (err: any) {
+      if (err.limitReached) {
+        setLimitModal({ count: err.count, limit: err.limit, isPremium: err.isPremium });
+      } else {
+        setSaveErrorMsg('No se pudo guardar la proteína de comparación.');
+      }
+    } finally {
+      setCompareSaving(false);
+    }
+  };
+
+  const handleCompareUnsave = async () => {
+    if (!compareSavedId || !user?.id) return;
+    setCompareSaving(true);
+    try {
+      await api.deleteSavedProtein(compareSavedId, user.id);
+      setCompareSaved(false);
+      setCompareSavedId(null);
+      setCompareDeleteConfirm(false);
+    } catch (err) {
+      setSaveErrorMsg('No se pudo eliminar la proteína comparada.');
+    } finally {
+      setCompareSaving(false);
     }
   };
 
@@ -626,16 +682,16 @@ export default function JobResults() {
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'stretch', flex: 1, minWidth: 0, width: '100%' }}>
 
       {/* PANEL PRINCIPAL IZQUIERDO */}
-      <div className="glass-panel" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="glass-panel" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%', gap: '1.5rem' }}>
 
         {/* Cabecera */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', height: '80px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: 0 }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', color: 'var(--text-secondary)', flexShrink: 0 }}>
               <ArrowLeft size={24} />
             </Link>
-            <div>
-              <h2 style={{ margin: 0, color: 'var(--text-primary)', whiteSpace: 'nowrap', fontSize: '1.4rem' }}>
+            <div style={{ minWidth: 0 }}>
+              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.4rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {outputs?.protein_metadata?.protein_name || outputs?.structural_data?.protein_id || (status === 'COMPLETED' ? 'Cargando resultados...' : 'Predicción en progreso...')}
               </h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
@@ -669,7 +725,7 @@ export default function JobResults() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0, marginLeft: '1rem' }}>
             {status === 'COMPLETED' && !compareMode && (
               <button 
                 className="btn-secondary" 
@@ -702,19 +758,22 @@ export default function JobResults() {
           </div>
         </div>
 
+        {/* Panel bio-informativo: organism + UniProt + PDB + descripción */}
+        <ProteinMetaPanel meta={outputs?.protein_metadata} />
+
         {/* Estado: Pendiente o Ejecutando */}
         {(status === 'PENDING' || status === 'RUNNING') && (
           <div style={{ textAlign: 'center', padding: '4rem 0' }}>
             <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite' }} />
-            <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Ejecutando en CESGA...</h3>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Estado actual: {status}</p>
+            <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Simulando ejecución en CESGA...</h3>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Estado actual: {getStatusLabel(status)}</p>
             <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
           </div>
         )}
 
         {/* Estado: Completado */}
         {status === 'COMPLETED' && outputs && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <>
 
             {/* Visor Molecular */}
             <div style={{ background: 'var(--bg-color-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
@@ -805,8 +864,8 @@ export default function JobResults() {
 
       {/* PANEL COMPARADOR (CENTRO) */}
       {status === 'COMPLETED' && outputs && compareMode && (
-        <div className="glass-panel animate-fade-in" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', height: '80px' }}>
+        <div className="glass-panel animate-fade-in" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
              <h2 style={{ margin: 0, fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '8px' }} className="gradient-text">
                <SplitSquareHorizontal size={20} /> Modo Comparación
              </h2>
@@ -820,7 +879,7 @@ export default function JobResults() {
           {compareStatus === 'IDLE' && (
             <form onSubmit={submitCompare} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
-                💡 <b>Tip:</b> Cópiale la secuencia original al Chatbot y pídele que le aplique mutaciones (ej. reemplazar hélices por Prolinas). Luego pega el resultado aquí o arrastra un `.pdb` modificado.
+                💡 <b>Sugerencia:</b> Cópiale la secuencia original al Chatbot y pídele que le aplique mutaciones (ej. reemplazar hélices por Prolinas). Luego pega el resultado aquí o arrastra un `.pdb` modificado.
               </p>
               
               <div
@@ -888,18 +947,89 @@ export default function JobResults() {
           {(compareStatus === 'PENDING' || compareStatus === 'RUNNING') && (
             <div style={{ textAlign: 'center', padding: '4rem 0', flex: 1 }}>
               <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite', margin: '0 auto' }} />
-              <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Procesando en CESGA...</h3>
-              <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{compareStatus}</p>
+              <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Simulando en CESGA...</h3>
+              <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Estado actual: {getStatusLabel(compareStatus)}</p>
             </div>
           )}
 
           {compareStatus === 'COMPLETED' && compareOutputs && (
             <>
+              <ProteinMetaPanel meta={compareOutputs?.protein_metadata} />
+
               <div style={{ background: 'var(--bg-color-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '1rem', height: '40px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', height: '40px' }}>
                   <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                     <ShieldCheck size={20} color="var(--accent-cyan)" /> Modelo Secundario
                   </h3>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    
+                    {/* Botón descargar Comparación */}
+                    <button className="btn-secondary" onClick={handleCompareDownload}
+                      style={{ padding: '6px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Download size={16} /> {compareOutputs?.structural_data?.pdb_file?.trim()?.startsWith('data_') ? 'CIF' : 'PDB'}
+                    </button>
+
+                    {/* Botón guardar Comparación */}
+                    {!compareSaved ? (
+                      <button
+                        onClick={handleCompareSave}
+                        disabled={compareSaving}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '6px 14px', fontSize: '0.85rem', fontWeight: 600,
+                          background: compareSaving ? 'rgba(79,172,254,0.1)' : 'linear-gradient(135deg, rgba(79,172,254,0.2), rgba(0,242,254,0.2))',
+                          border: '1px solid rgba(0,242,254,0.4)', borderRadius: '8px',
+                          color: compareSaving ? 'var(--text-secondary)' : '#00f2fe',
+                          cursor: compareSaving ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { if (!compareSaving) (e.currentTarget as HTMLElement).style.boxShadow = '0 0 12px rgba(0,242,254,0.3)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                      >
+                        {compareSaving
+                          ? <><Loader2 size={15} className="animate-spin" /> Guardando...</>
+                          : <><Bookmark size={15} /> Guardar</>
+                        }
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '6px 12px', fontSize: '0.85rem', fontWeight: 600,
+                          background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)',
+                          borderRadius: '8px', color: '#10b981',
+                        }}>
+                          <BookmarkCheck size={15} /> Guardada
+                        </div>
+                        <button
+                          onClick={() => setCompareDeleteConfirm(true)}
+                          style={{
+                            display: 'flex', alignItems: 'center', padding: '6px 8px',
+                            background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                            borderRadius: '8px', color: '#fca5a5', cursor: 'pointer',
+                          }}
+                          title="Eliminar guardado"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Confirmación eliminación Comparación */}
+                    {compareDeleteConfirm && (
+                      <div style={{
+                        position: 'absolute', top: '45px', right: '16px', zIndex: 100,
+                        background: '#0f172a', border: '1px solid #ef4444', borderRadius: '8px',
+                        padding: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', width: '200px'
+                      }}>
+                        <div style={{ fontSize: '0.8rem', marginBottom: '10px' }}>¿Eliminar de guardados?</div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={handleCompareUnsave} style={{ background: '#ef4444', border: 'none', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', flex: 1 }}>Sí, eliminar</button>
+                          <button onClick={() => setCompareDeleteConfirm(false)} style={{ background: 'transparent', border: '1px solid #94a3b8', color: '#94a3b8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', flex: 1 }}>No</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div style={{ height: '550px' }}>
                   <MoleculeViewer 
@@ -992,7 +1122,7 @@ export default function JobResults() {
                 <div>
                   <h2 style={{ margin: 0, color: '#fbbf24', fontSize: '1.1rem' }}>Límite alcanzado</h2>
                   <p style={{ margin: 0, fontSize: '0.78rem', color: 'rgba(251,191,36,0.7)' }}>
-                    Plan {limitModal.isPremium ? 'Premium' : 'Free'}
+                    Plan {limitModal.isPremium ? 'Premium' : 'Gratuito'}
                   </p>
                 </div>
               </div>
@@ -1024,7 +1154,7 @@ export default function JobResults() {
 
               <p style={{ color: '#e2e8f0', lineHeight: '1.65', fontSize: '0.92rem', marginBottom: '1.5rem' }}>
                 Has alcanzado el límite de <strong style={{ color: '#fbbf24' }}>{limitModal.limit} proteínas</strong> para el plan{' '}
-                <strong>{limitModal.isPremium ? 'Premium' : 'Free'}</strong>.
+                <strong>{limitModal.isPremium ? 'Premium' : 'Gratuito'}</strong>.
                 Para guardar una nueva, elimina alguna de las ya guardadas desde <strong>Mis Células</strong>.
               </p>
 
