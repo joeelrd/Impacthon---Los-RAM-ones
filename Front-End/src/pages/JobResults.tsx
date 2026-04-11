@@ -219,7 +219,7 @@ export default function JobResults() {
   const renderDataPanels = (biological_data: any, dataAccounting: any) => {
     if (!biological_data) return null;
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', width: '100%' }}>
         {/* Panel Biológico */}
         <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <h4 style={{ color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -333,18 +333,18 @@ export default function JobResults() {
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'stretch', flex: 1, minWidth: 0, width: '100%' }}>
 
       {/* PANEL PRINCIPAL IZQUIERDO */}
-      <div className="glass-panel" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: 'fit-content' }}>
+      <div className="glass-panel" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
         {/* Cabecera */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', height: '80px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Link to="/" style={{ display: 'flex', alignItems: 'center', color: 'var(--text-secondary)' }}>
               <ArrowLeft size={24} />
             </Link>
-            <h2 style={{ margin: 0 }}>Resultados Job: <span style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.9em' }}>{jobId}</span></h2>
+            <h2 style={{ margin: 0, whiteSpace: 'nowrap' }}>Resultados Job: <span style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.9em' }}>{jobId}</span></h2>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {status === 'COMPLETED' && !compareMode && (
               <button 
                 className="btn-secondary" 
@@ -375,7 +375,7 @@ export default function JobResults() {
 
             {/* Visor Molecular */}
             <div style={{ background: 'var(--bg-color-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', height: '40px' }}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                   <ShieldCheck size={20} color="var(--accent-cyan)" /> Estructura Plegada
                 </h3>
@@ -456,8 +456,8 @@ export default function JobResults() {
 
       {/* PANEL COMPARADOR (CENTRO) */}
       {status === 'COMPLETED' && outputs && compareMode && (
-        <div className="glass-panel animate-fade-in" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '800px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="glass-panel animate-fade-in" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', height: '80px' }}>
              <h2 style={{ margin: 0, fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '8px' }} className="gradient-text">
                <SplitSquareHorizontal size={20} /> Modo Comparación
              </h2>
@@ -465,6 +465,8 @@ export default function JobResults() {
                 <X size={18} />
              </button>
           </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1 }}>
 
           {compareStatus === 'IDLE' && (
             <form onSubmit={submitCompare} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
@@ -543,21 +545,29 @@ export default function JobResults() {
           )}
 
           {compareStatus === 'COMPLETED' && compareOutputs && (
-            <div style={{ background: 'var(--bg-color-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1rem 0' }}>
-                <ShieldCheck size={20} color="var(--accent-cyan)" /> Modelo Secundario
-              </h3>
-              <div style={{ flex: 1, minHeight: '550px' }}>
-                <MoleculeViewer pdbData={compareOutputs.structural_data.pdb_file} />
+            <>
+              <div style={{ background: 'var(--bg-color-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '1rem', height: '40px' }}>
+                  <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                    <ShieldCheck size={20} color="var(--accent-cyan)" /> Modelo Secundario
+                  </h3>
+                </div>
+                <div style={{ height: '550px' }}>
+                  <MoleculeViewer pdbData={compareOutputs.structural_data.pdb_file} />
+                </div>
               </div>
               
               {/* Paneles de Datos de la Comparación */}
-              {renderDataPanels(compareOutputs.biological_data, compareAccounting)}
-              
-              <button onClick={() => { setCompareStatus('IDLE'); setCompareFasta(''); }} className="btn-secondary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>
-                Nueva Comparación
-              </button>
-            </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1 }}>
+                {renderDataPanels(compareOutputs.biological_data, compareAccounting)}
+                
+                <div style={{ marginTop: 'auto' }}>
+                  <button onClick={() => { setCompareStatus('IDLE'); setCompareFasta(''); }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                    Nueva Comparación
+                  </button>
+                </div>
+              </div>
+            </>
           )}
 
           {compareStatus === 'FAILED' && (
@@ -568,6 +578,8 @@ export default function JobResults() {
               <button onClick={() => setCompareStatus('IDLE')} className="btn-secondary">Reintentar</button>
             </div>
           )}
+          
+          </div>
         </div>
       )}
 
