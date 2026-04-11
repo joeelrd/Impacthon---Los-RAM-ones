@@ -7,13 +7,54 @@ import BiologistGuide from '../components/BiologistGuide';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Activity, Cpu, ArrowLeft, Download, AlertTriangle,
-  Bot, Bookmark, BookmarkCheck, X, Crown, Trash2, Loader2
+  Bot, Bookmark, BookmarkCheck, X, Crown, Trash2, Loader2,
+  SplitSquareHorizontal, Send
 } from 'lucide-react';
 
 interface LimitInfo {
   count: number;
   limit: number;
   isPremium: boolean;
+}
+
+const aminoAcidMap: Record<string, string> = {
+  'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 'CYS': 'C',
+  'GLU': 'E', 'GLN': 'Q', 'GLY': 'G', 'HIS': 'H', 'ILE': 'I',
+  'LEU': 'L', 'LYS': 'K', 'MET': 'M', 'PHE': 'F', 'PRO': 'P',
+  'SER': 'S', 'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V'
+};
+
+function cifToFasta(cifText: string): string {
+  const match = cifText.match(/_entity_poly\.pdbx_seq_one_letter_code\s+[\s\S]*?\n;\s*([\s\S]*?)\n;/i);
+  if (match && match[1]) return '>Extracted_from_CIF\n' + match[1].replace(/\s+/g, '');
+  const simpleMatch = cifText.match(/_entity_poly\.pdbx_seq_one_letter_code\s+([A-Z\s]+)/i);
+  if (simpleMatch && simpleMatch[1]) {
+     const seq = simpleMatch[1].replace(/\s+/g, '');
+     if (seq.length > 5) return '>Extracted_from_CIF\n' + seq;
+  }
+  return cifText;
+}
+
+function pdbToFasta(pdbText: string): string {
+  const seqresLines = pdbText.split('\n').filter(l => l.startsWith('SEQRES'));
+  if (seqresLines.length > 0) {
+    let seq = '';
+    for (const line of seqresLines) {
+      const parts = line.substring(19).trim().split(/\s+/);
+      for (const p of parts) { if (aminoAcidMap[p]) seq += aminoAcidMap[p]; else if (p.length === 3) seq += 'X'; }
+    }
+    return '>Extracted_from_PDB_SEQRES\n' + seq;
+  }
+  const atomLines = pdbText.split('\n').filter(l => l.startsWith('ATOM') && l.substring(12, 16).trim() === 'CA');
+  if (atomLines.length > 0) {
+    let seq = ''; let lastResNum = '';
+    for (const line of atomLines) {
+      const resName = line.substring(17, 20).trim(); const resNum = line.substring(22, 26).trim();
+      if (resNum !== lastResNum) { seq += aminoAcidMap[resName] || 'X'; lastResNum = resNum; }
+    }
+    return '>Extracted_from_PDB_ATOM\n' + seq;
+  }
+  return pdbText;
 }
 
 export default function JobResults() {
@@ -32,6 +73,62 @@ export default function JobResults() {
   const [limitModal, setLimitModal] = useState<LimitInfo | null>(null);
   const [saveErrorMsg, setSaveErrorMsg] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  // --- MODO COMPARACIÓN ---
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareFasta, setCompareFasta] = useState('');
+  const [compareOriginalPdb, setCompareOriginalPdb] = useState('');
+  const [compareIsDragging, setCompareIsDragging] = useState(false);
+  const [compareStatus, setCompareStatus] = useState('IDLE');
+  const [compareJobId, setCompareJobId] = useState<string | null>(null);
+  const [compareOutputs, setCompareOutputs] = useState<any>(null);
+  const [compareAccounting, setCompareAccounting] = useState<any>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+
+  const submitCompare = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!compareFasta || !user?.id) return;
+    setCompareLoading(true);
+    setCompareStatus('PENDING');
+    try {
+      const res = await api.submitJob(compareFasta, 'compare.fasta', user.id);
+      if (res && res.job_id) {
+        if (compareOriginalPdb) sessionStorage.setItem(`pdb_cache_${res.job_id}`, compareOriginalPdb);
+        setCompareJobId(res.job_id);
+      }
+    } catch(err) {
+      setCompareStatus('FAILED');
+    } finally {
+      setCompareLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!compareJobId) return;
+    let pollInterval: any;
+    const checkCompareStatus = async () => {
+      try {
+        const res = await api.getJobStatus(compareJobId);
+        setCompareStatus(res.status);
+        if (res.status === 'COMPLETED' || res.status === 'FAILED') {
+          clearInterval(pollInterval);
+          if (res.status === 'COMPLETED') {
+             const outs = await api.getJobOutputs(compareJobId);
+             const cachedComparePdb = sessionStorage.getItem(`pdb_cache_${compareJobId}`);
+             if (cachedComparePdb && outs.structural_data) outs.structural_data.pdb_file = cachedComparePdb;
+             setCompareOutputs(outs);
+             try {
+                const accRes = await api.getJobAccounting(compareJobId);
+                if (accRes && accRes.accounting) setCompareAccounting(accRes.accounting);
+             } catch(err) {} 
+          }
+        }
+      } catch(err) {}
+    };
+    pollInterval = setInterval(checkCompareStatus, 3000);
+    checkCompareStatus();
+    return () => clearInterval(pollInterval);
+  }, [compareJobId]);
 
   useEffect(() => {
     if (!jobId) return;
@@ -119,11 +216,124 @@ export default function JobResults() {
     }
   };
 
+  const renderDataPanels = (biological_data: any, dataAccounting: any) => {
+    if (!biological_data) return null;
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+        {/* Panel Biológico */}
+        <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <h4 style={{ color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Activity size={18} /> Panel Biológico
+          </h4>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Solubilidad</span>
+                <span>{biological_data?.solubility_score?.toFixed(1) || 0}%
+                  <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '4px' }}>({biological_data?.solubility_prediction || 'N/A'})</span>
+                </span>
+              </div>
+              <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
+                <div style={{ width: `${biological_data?.solubility_score || 0}%`, background: 'var(--accent-cyan)', height: '100%', borderRadius: '3px' }} />
+              </div>
+            </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Inestabilidad</span>
+                <span>{biological_data?.instability_index?.toFixed(1) || 0}
+                  <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '4px' }}>({biological_data?.stability_status || 'N/A'})</span>
+                </span>
+              </div>
+              <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
+                <div style={{ width: `${Math.min(biological_data?.instability_index || 0, 100)}%`, background: biological_data?.stability_status === 'stable' ? '#10b981' : '#ef4444', height: '100%', borderRadius: '3px' }} />
+              </div>
+            </div>
+          </div>
+          {biological_data?.secondary_structure_prediction && (
+            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Estructura Secundaria
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  { label: 'Hélice', pct: biological_data.secondary_structure_prediction.helix_percent, color: '#65cbf3' },
+                  { label: 'Hoja-β', pct: biological_data.secondary_structure_prediction.strand_percent, color: '#10b981' },
+                  { label: 'Coil',   pct: biological_data.secondary_structure_prediction.coil_percent,   color: '#94a3b8' },
+                ].map(({ label, pct, color }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '50px', fontSize: '0.8rem', color }}>{label}</span>
+                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', height: '5px', borderRadius: '3px' }}>
+                      <div style={{ width: `${pct}%`, background: color, height: '100%', borderRadius: '3px' }} />
+                    </div>
+                    <span style={{ width: '40px', textAlign: 'right', fontSize: '0.8rem' }}>{pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Alertas Toxicidad</span>
+                <span style={{ color: biological_data?.toxicity_alerts?.length ? '#ff7d45' : '#10b981' }}>
+                  {biological_data?.toxicity_alerts?.length || 0}
+                </span>
+              </div>
+              {biological_data?.toxicity_alerts?.map((alert: string, i: number) => (
+                <div key={i} style={{ fontSize: '0.8rem', color: '#ff7d45', marginTop: '4px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '2px' }} /> <span style={{ lineHeight: '1.4' }}>{alert}</span>
+                </div>
+              ))}
+            </div>
+            {biological_data?.allergenicity_alerts?.length > 0 && (
+              <div style={{ paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Alertas Alergenicidad</span>
+                  <span style={{ color: '#facc15' }}>{biological_data.allergenicity_alerts.length}</span>
+                </div>
+                {biological_data.allergenicity_alerts.map((alert: string, i: number) => (
+                  <div key={i} style={{ fontSize: '0.8rem', color: '#facc15', marginTop: '4px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                    <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '2px' }} /> <span style={{ lineHeight: '1.4' }}>{alert}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* HPC Contabilidad */}
+        {dataAccounting && (
+          <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Cpu size={18} /> HPC Contabilidad
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.9rem' }}>
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Horas CPU</div>
+                <div style={{ fontWeight: 'bold' }}>{dataAccounting?.cpu_hours?.toFixed(4) || "0.0000"}</div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Horas GPU</div>
+                <div style={{ fontWeight: 'bold', color: 'var(--accent-cyan)' }}>{dataAccounting?.gpu_hours?.toFixed(4) || "0.0000"}</div>
+              </div>
+              {dataAccounting?.total_wall_time_seconds && (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  Tiempo total en cola: {dataAccounting.total_wall_time_seconds}s
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: compareMode ? 'column' : 'row', gap: '1.5rem', alignItems: compareMode ? 'stretch' : 'flex-start', width: '100%' }}>
+
+      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'stretch', flex: 1, minWidth: 0, width: '100%' }}>
 
       {/* PANEL PRINCIPAL IZQUIERDO */}
-      <div className="glass-panel" style={{ padding: '2rem', flex: 1, minWidth: 0 }}>
+      <div className="glass-panel" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', height: 'fit-content' }}>
 
         {/* Cabecera */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -135,6 +345,15 @@ export default function JobResults() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {status === 'COMPLETED' && !compareMode && (
+              <button 
+                className="btn-secondary" 
+                onClick={() => setCompareMode(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.85rem' }}
+              >
+                <SplitSquareHorizontal size={16} /> Comparar FASTA
+              </button>
+            )}
             <BiologistGuide />
             <div className={`badge status-${status.toLowerCase()}`}>{status}</div>
           </div>
@@ -229,123 +448,141 @@ export default function JobResults() {
               </div>
             </div>
 
-            {/* Fila de paneles: Biológico + HPC */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-
-              {/* Panel Biológico */}
-              <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <h4 style={{ color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Activity size={18} /> Panel Biológico
-                </h4>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Solubilidad</span>
-                      <span>{outputs.biological_data?.solubility_score?.toFixed(1) || 0}%
-                        <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '4px' }}>({outputs.biological_data?.solubility_prediction || 'N/A'})</span>
-                      </span>
-                    </div>
-                    <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
-                      <div style={{ width: `${outputs.biological_data?.solubility_score || 0}%`, background: 'var(--accent-cyan)', height: '100%', borderRadius: '3px' }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Inestabilidad</span>
-                      <span>{outputs.biological_data?.instability_index?.toFixed(1) || 0}
-                        <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '4px' }}>({outputs.biological_data?.stability_status || 'N/A'})</span>
-                      </span>
-                    </div>
-                    <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
-                      <div style={{ width: `${Math.min(outputs.biological_data?.instability_index || 0, 100)}%`, background: outputs.biological_data?.stability_status === 'stable' ? '#10b981' : '#ef4444', height: '100%', borderRadius: '3px' }} />
-                    </div>
-                  </div>
-                </div>
-
-                {outputs.biological_data?.secondary_structure_prediction && (
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Proyecciones Estructura Secundaria
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {[
-                        { label: 'Hélice', pct: outputs.biological_data.secondary_structure_prediction.helix_percent, color: '#65cbf3' },
-                        { label: 'Hoja-β', pct: outputs.biological_data.secondary_structure_prediction.strand_percent, color: '#10b981' },
-                        { label: 'Coil',   pct: outputs.biological_data.secondary_structure_prediction.coil_percent,   color: '#94a3b8' },
-                      ].map(({ label, pct, color }) => (
-                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ width: '50px', fontSize: '0.8rem', color }}>{label}</span>
-                          <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', height: '5px', borderRadius: '3px' }}>
-                            <div style={{ width: `${pct}%`, background: color, height: '100%', borderRadius: '3px' }} />
-                          </div>
-                          <span style={{ width: '40px', textAlign: 'right', fontSize: '0.8rem' }}>{pct}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Alertas Toxicidad</span>
-                      <span style={{ color: outputs.biological_data?.toxicity_alerts?.length ? '#ff7d45' : '#10b981' }}>
-                        {outputs.biological_data?.toxicity_alerts?.length || 0}
-                      </span>
-                    </div>
-                    {outputs.biological_data?.toxicity_alerts?.map((alert: string, i: number) => (
-                      <div key={i} style={{ fontSize: '0.8rem', color: '#ff7d45', marginTop: '4px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                        <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '2px' }} /> <span style={{ lineHeight: '1.4' }}>{alert}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {outputs.biological_data?.allergenicity_alerts?.length > 0 && (
-                    <div style={{ paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Alertas Alergenicidad</span>
-                        <span style={{ color: '#facc15' }}>{outputs.biological_data.allergenicity_alerts.length}</span>
-                      </div>
-                      {outputs.biological_data.allergenicity_alerts.map((alert: string, i: number) => (
-                        <div key={i} style={{ fontSize: '0.8rem', color: '#facc15', marginTop: '4px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                          <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: '2px' }} /> <span style={{ lineHeight: '1.4' }}>{alert}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* HPC Contabilidad */}
-              <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Cpu size={18} /> HPC Contabilidad
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.9rem' }}>
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Horas CPU</div>
-                    <div style={{ fontWeight: 'bold' }}>{accounting?.cpu_hours?.toFixed(4) || "0.0000"}</div>
-                  </div>
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Horas GPU</div>
-                    <div style={{ fontWeight: 'bold', color: 'var(--accent-cyan)' }}>{accounting?.gpu_hours?.toFixed(4) || "0.0000"}</div>
-                  </div>
-                  {accounting?.total_wall_time_seconds && (
-                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', marginTop: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      Tiempo total en cola: {accounting.total_wall_time_seconds}s
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            {/* Paneles de Datos Renderizados */}
+            {renderDataPanels(outputs.biological_data, accounting)}
           </div>
         )}
       </div>
 
-      {/* CHATBOT PANEL */}
+      {/* PANEL COMPARADOR (CENTRO) */}
+      {status === 'COMPLETED' && outputs && compareMode && (
+        <div className="glass-panel animate-fade-in" style={{ padding: '2rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '800px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+             <h2 style={{ margin: 0, fontSize: '1.3rem', display: 'flex', alignItems: 'center', gap: '8px' }} className="gradient-text">
+               <SplitSquareHorizontal size={20} /> Modo Comparación
+             </h2>
+             <button onClick={() => setCompareMode(false)} className="btn-secondary" style={{ padding: '4px', background: 'transparent', height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={18} />
+             </button>
+          </div>
+
+          {compareStatus === 'IDLE' && (
+            <form onSubmit={submitCompare} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+                💡 <b>Tip:</b> Cópiale la secuencia original al Chatbot y pídele que le aplique mutaciones (ej. reemplazar hélices por Prolinas). Luego pega el resultado aquí o arrastra un `.pdb` modificado.
+              </p>
+              
+              <div
+                style={{
+                  position: 'relative', flex: 1, display: 'flex',
+                  border: compareIsDragging ? '2px dashed var(--accent-cyan)' : '2px dashed transparent',
+                  borderRadius: '12px', transition: 'all 0.2s ease',
+                  backgroundColor: compareIsDragging ? 'rgba(0, 242, 254, 0.05)' : 'transparent'
+                }}
+                onDragOver={e => { e.preventDefault(); setCompareIsDragging(true); }}
+                onDragLeave={e => { e.preventDefault(); setCompareIsDragging(false); }}
+                onDrop={e => {
+                  e.preventDefault(); setCompareIsDragging(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      if (event.target && typeof event.target.result === 'string') {
+                        let text = event.target.result;
+                        const fileNameInput = file.name.toLowerCase();
+                        if (fileNameInput.endsWith('.pdb') || text.startsWith('HEADER') || text.startsWith('ATOM  ')) {
+                          setCompareOriginalPdb(text); text = pdbToFasta(text);
+                        } else if (fileNameInput.endsWith('.cif') || text.startsWith('data_')) {
+                          setCompareOriginalPdb(text); text = cifToFasta(text);
+                        } else { 
+                          setCompareOriginalPdb(''); 
+                        }
+                        setCompareFasta(text);
+                      }
+                    };
+                    reader.readAsText(file);
+                  }
+                }}
+              >
+                <textarea
+                  className="input-styled"
+                  style={{ flex: 1, minHeight: '350px', lineHeight: '1.6', backgroundColor: compareIsDragging ? 'transparent' : 'var(--bg-card)' }}
+                  placeholder="Pega la secuencia FASTA o arrastra un .PDB aquí recomendados por el chatbot..."
+                  value={compareFasta}
+                  onChange={(e) => {
+                     setCompareFasta(e.target.value);
+                     if (compareOriginalPdb) setCompareOriginalPdb(''); // reset original if they type
+                  }}
+                />
+                {compareIsDragging && (
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    pointerEvents: 'none', color: 'var(--accent-cyan)', fontWeight: 'bold',
+                    fontSize: '1.2rem', background: 'rgba(10,10,15,0.7)', borderRadius: '12px', zIndex: 10
+                  }}>
+                    Suelta el PDB/FASTA aquí
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="submit" className="btn-primary" disabled={compareLoading || !compareFasta.trim()}>
+                  {compareLoading ? <><Loader2 size={16} className="animate-spin" /> Procesando...</> : <><Send size={16} /> Comparar Modelo</>}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {(compareStatus === 'PENDING' || compareStatus === 'RUNNING') && (
+            <div style={{ textAlign: 'center', padding: '4rem 0', flex: 1 }}>
+              <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite', margin: '0 auto' }} />
+              <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Simulando en CESGA...</h3>
+              <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{compareStatus}</p>
+            </div>
+          )}
+
+          {compareStatus === 'COMPLETED' && compareOutputs && (
+            <div style={{ background: 'var(--bg-color-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1rem 0' }}>
+                <ShieldCheck size={20} color="var(--accent-cyan)" /> Modelo Secundario
+              </h3>
+              <div style={{ flex: 1, minHeight: '550px' }}>
+                <MoleculeViewer pdbData={compareOutputs.structural_data.pdb_file} />
+              </div>
+              
+              {/* Paneles de Datos de la Comparación */}
+              {renderDataPanels(compareOutputs.biological_data, compareAccounting)}
+              
+              <button onClick={() => { setCompareStatus('IDLE'); setCompareFasta(''); }} className="btn-secondary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>
+                Nueva Comparación
+              </button>
+            </div>
+          )}
+
+          {compareStatus === 'FAILED' && (
+            <div style={{ textAlign: 'center', padding: '2rem', flex: 1, color: '#ef4444' }}>
+              <AlertTriangle size={32} style={{ margin: '0 auto 1rem' }} />
+              Error al simular la proteína.
+              <br /><br />
+              <button onClick={() => setCompareStatus('IDLE')} className="btn-secondary">Reintentar</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      </div> {/* FIN ROW DE PANELES */}
+
+      {/* CHATBOT PANEL (DINÁMICO: DERECHA EN SINGLE, ABAJO EN COMPARACIÓN) */}
       {status === 'COMPLETED' && outputs && (
-        <div style={{ width: '420px', flexShrink: 0, position: 'sticky', top: '1rem' }}>
+        <div style={{ 
+          width: compareMode ? '100%' : '420px', 
+          marginTop: compareMode ? '0.5rem' : '0',
+          position: compareMode ? 'static' : 'sticky',
+          top: compareMode ? 'auto' : '1rem',
+          flexShrink: 0,
+          transition: 'all 0.3s ease-in-out'
+        }}>
           <ChatbotPanel context={{
             solubility_score: outputs.biological_data?.solubility_score,
             toxicity_alerts: outputs.biological_data?.toxicity_alerts,
