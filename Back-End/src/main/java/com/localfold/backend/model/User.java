@@ -1,6 +1,7 @@
 package com.localfold.backend.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,6 +24,9 @@ public class User {
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isPremium = false;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -50,6 +54,9 @@ public class User {
 
     public boolean isPremium() { return isPremium; }
     public void setPremium(boolean isPremium) { this.isPremium = isPremium; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public List<SavedProteinEntity> getSavedProteins() { return savedProteins; }
     public void setSavedProteins(List<SavedProteinEntity> savedProteins) { this.savedProteins = savedProteins; }

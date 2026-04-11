@@ -4,6 +4,7 @@ public class ProteinSaveRequest {
     private Long userId;
     private String proteinName;
     private String pdbData;
+    private String fastaSequence;
     private String jobId;
 
     public Long getUserId() { return userId; }
@@ -14,6 +15,9 @@ public class ProteinSaveRequest {
 
     public String getPdbData() { return pdbData; }
     public void setPdbData(String pdbData) { this.pdbData = pdbData; }
+
+    public String getFastaSequence() { return fastaSequence; }
+    public void setFastaSequence(String fastaSequence) { this.fastaSequence = fastaSequence; }
 
     public String getJobId() { return jobId; }
     public void setJobId(String jobId) { this.jobId = jobId; }

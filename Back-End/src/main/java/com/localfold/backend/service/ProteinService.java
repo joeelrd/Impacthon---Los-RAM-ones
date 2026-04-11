@@ -36,6 +36,7 @@ public class ProteinService {
         SavedProteinEntity entity = new SavedProteinEntity(
             request.getProteinName(),
             request.getPdbData(),
+            request.getFastaSequence(),
             request.getJobId(),
             LocalDateTime.now(),
             user

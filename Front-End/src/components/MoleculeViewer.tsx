@@ -12,11 +12,12 @@ export default function MoleculeViewer({ pdbData }: Props) {
     if (!viewerRef.current || !pdbData || !(window as any).PDBeMolstarPlugin) return;
 
     let isMounted = true;
+    let currentObjectUrl: string | null = null;
 
     const renderMolstar = async () => {
       // Clean up simulated PDB syntax issues from the mock API
       let cleanedPdbData = pdbData;
-      const isSimulated = cleanedPdbData.includes("SIMULATED ALPHAFOLD STRUCTURE");
+      const isSimulated = cleanedPdbData.includes("SIMULATED ALPHAFOLD STRUCTURE") || cleanedPdbData.includes("SIMULATED ALPHAFOLD2 STRUCTURE");
       
       if (isSimulated) {
           cleanedPdbData = cleanedPdbData.split('\n')
@@ -24,17 +25,21 @@ export default function MoleculeViewer({ pdbData }: Props) {
               .join('\n');
       }
 
-      // Create object URL from string
+      // Detect format: PDB vs mmCIF (data_ is the standard start of a CIF file)
+      const isCIF = cleanedPdbData.trim().startsWith('data_');
+      const format = isCIF ? 'mmcif' : 'pdb';
+
+      // Create object URL from string content
       const blob = new Blob([cleanedPdbData], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
+      currentObjectUrl = URL.createObjectURL(blob);
 
       const options = {
         customData: {
-          url: url,
-          format: 'pdb'
+          url: currentObjectUrl,
+          format: format
         },
-        alphafoldView: isSimulated, // Only use AlphaFold pLDDT coloring for simulated structures
-        bgColor: { r: 10, g: 10, b: 15 },
+        alphafoldView: !isSimulated, // Disable alphafoldView for fake structures so spacefill works properly
+        bgColor: { r: 10, g: 10, b: 15 }, // #0a0a0f backgroundColor match
         hideControls: true,
         hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
         lighting: 'plastic',
@@ -68,6 +73,11 @@ export default function MoleculeViewer({ pdbData }: Props) {
       if (viewerRef.current) {
         viewerRef.current.innerHTML = '';
       }
+      // Revoke the object URL to avoid memory leaks
+      // (Using a timeout to ensure Molstar finished loading it if it was in progress)
+      setTimeout(() => {
+        if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+      }, 1000);
     };
   }, [pdbData]);
 
