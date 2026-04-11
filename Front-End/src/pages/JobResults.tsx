@@ -346,7 +346,6 @@ export default function JobResults() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
                 {globalStats.by_category && Object.entries(globalStats.by_category)
                   .filter(([k,v]) => Number(v) > 0 && k !== 'unknown')
-                  .slice(0, 5)
                   .map(([cat, count]) => (
                     <span key={cat} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', padding: '2px 8px', fontSize: '0.75rem', color: '#e2e8f0' }}>
                       {cat}: {String(count)}
@@ -371,7 +370,7 @@ export default function JobResults() {
                     <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{sample.protein_name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{sample.uniprot_id} · {sample.sequence_length} AA</div>
                   </div>
-                  <Link to="/" style={{ textDecoration: 'none', background: 'none', border: '1px solid var(--accent-cyan)', color: 'var(--accent-cyan)', borderRadius: '4px', padding: '4px 10px', fontSize: '0.75rem', cursor: 'pointer', transition: '0.2s', textAlign: 'center' }}>
+                  <Link to="/" state={{ fastaToLoad: sample.fasta }} style={{ textDecoration: 'none', background: 'none', border: '1px solid var(--accent-cyan)', color: 'var(--accent-cyan)', borderRadius: '4px', padding: '4px 10px', fontSize: '0.75rem', cursor: 'pointer', transition: '0.2s', textAlign: 'center' }}>
                     Explorar
                   </Link>
                 </div>
