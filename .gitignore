@@ -1,6 +1,25 @@
-<<<<<<< HEAD
-=======
+# Editor and IDE configurations
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+
+# Gradle and Spring Boot (Backend)
 .gradle/
->>>>>>> origin/main
+build/
+target/
+out/
+Back-End/build/
 Back-End/.gradle/
-.gradle/
+
+# Node and React (Frontend)
+node_modules/
+Front-End/node_modules/
+Front-End/dist/
+.env
+
+# Misceláneos
+*.log
+*.pdb
+.DS_Store
