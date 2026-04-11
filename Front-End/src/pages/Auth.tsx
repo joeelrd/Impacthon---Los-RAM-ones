@@ -60,7 +60,60 @@ export default function Auth() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+    <div style={{ position: 'relative', width: '100vw', minHeight: '85vh', display: 'flex', overflow: 'hidden', margin: '0 calc(-50vw + 50%)' }}>
+      <style>
+        {`
+          @keyframes spinADN {
+            from { transform: translate(-50%, -50%) rotate(0deg) scale(1.1); }
+            to { transform: translate(-50%, -50%) rotate(360deg) scale(1.1); }
+          }
+        `}
+      </style>
+      
+      {/* Contenedor de fondo */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: '#050a11' }}>
+        <img 
+          src="/adn_bg.png" 
+          alt="Fondo ADN" 
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '130vw',
+            height: '130vw',
+            minWidth: '1200px',
+            minHeight: '1200px',
+            opacity: 0.35,
+            objectFit: 'cover',
+            animation: 'spinADN 180s linear infinite'
+          }}
+        />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to right, rgba(5, 10, 17, 0.95) 0%, rgba(5, 10, 17, 0.4) 100%)' }} />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: '5rem', maxWidth: '1200px', margin: '0 auto', padding: '4rem 2rem', flexWrap: 'wrap', position: 'relative' }}>
+        
+        {/* Columna Izquierda: Información y Bienvenida */}
+        <div style={{ 
+          flex: '1 1 400px', 
+          maxWidth: '550px', 
+          color: 'white',
+          opacity: mounted ? 1 : 0, 
+          transform: mounted ? 'translateX(0)' : 'translateX(-30px)', 
+          transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        }}>
+          <h1 style={{ fontSize: '3.6rem', fontWeight: 800, marginBottom: '1.5rem', background: 'linear-gradient(135deg, #00f2fe, #4facfe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: '1.15' }}>
+            Bienvenido a LocalFold
+          </h1>
+          <p style={{ fontSize: '1.3rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+            La plataforma definitiva para la predicción de estructuras de proteínas y el análisis biomédico in-silico.
+          </p>
+          <p style={{ fontSize: '1.1rem', color: 'rgba(255, 255, 255, 0.7)', lineHeight: '1.7' }}>
+            Nuestra misión es empoderar a científicos e investigadores con herramientas avanzadas de inteligencia artificial. Acelera tus descubrimientos, prevé comportamientos moleculares con alta precisión y lleva tu laboratorio al siguiente nivel.
+          </p>
+        </div>
+
+      {/* Columna Derecha: Formulario de Autenticación Exactamente Igual */}
       <div 
         className="glass-panel" 
         style={{ 
@@ -188,6 +241,7 @@ export default function Auth() {
             </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }
