@@ -12,7 +12,7 @@
 ---
 
 ## 🧬 ¿Quiénes Somos?
-Somos **Los RAM-ones**, un equipo multidisciplinar participando en el **Impacthon Cesga**. Nuestro objetivo es democratizar el acceso a herramientas bioinformáticas avanzadas mediante soluciones de software intuitivas y escalables, cerrando la brecha entre la capacidad técnica de los supercomputadores y los investigadores del sector biomédico y biológico.
+Somos **Los RAM-ones**, un equipo multidisciplinar participando en el **Impacthon ETSE 2026**. Nuestro objetivo es democratizar el acceso a herramientas bioinformáticas avanzadas mediante soluciones de software intuitivas y escalables, cerrando la brecha entre la capacidad técnica de los supercomputadores y los investigadores del sector biomédico y biológico.
 
 ## 💡 ¿Qué solución proponemos?
 Actualmente, el uso de herramientas punteras de predicción como AlphaFold requiere altos conocimientos técnicos: manejo de terminales bash, conexión a clústeres remotos por SSH, scripting, y una espera a ciegas sin conocer de antemano los tiempos de cómputo o los costes operativos (cloud/FinOps).
@@ -78,6 +78,3 @@ npm run dev
 
 La aplicación web estará disponible en **http://localhost:5173**. 
 Crea tu cuenta de investigador en la pantalla de bienvenida y simula tu primera estructura.
-
----
-> Proyecto desarrollado bajo la presión pero guiado por la creatividad en el **Impacthon Cesga 2026**. ¡Larga vida al código!
