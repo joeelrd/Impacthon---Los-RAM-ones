@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Maximize, Minimize } from 'lucide-react';
 
 interface Props {
@@ -113,6 +113,7 @@ export default function MoleculeViewer({ pdbData }: Props) {
 
   return (
     <div
+      id="molstar-viewer-container"
       ref={containerRef}
       style={{
         width: '100%',
