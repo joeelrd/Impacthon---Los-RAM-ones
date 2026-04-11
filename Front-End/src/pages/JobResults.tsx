@@ -1,14 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import MoleculeViewer from '../components/MoleculeViewer';
 import ChatbotPanel from '../components/ChatbotPanel';
 import BiologistGuide from '../components/BiologistGuide';
+import GaiveReportModal from '../components/GaiveReportModal';
 import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Activity, Cpu, ArrowLeft, Download, AlertTriangle,
-  Bot, Bookmark, BookmarkCheck, X, Crown, Trash2, Loader2,
-  SplitSquareHorizontal, Send, Leaf, CircleDollarSign, Zap
+  Bookmark, BookmarkCheck, X, Crown, Trash2, Loader2,
+  SplitSquareHorizontal, Send, Leaf, CircleDollarSign, Zap, FileText
 } from 'lucide-react';
 
 interface LimitInfo {
@@ -81,7 +82,6 @@ function calculateHPCImpact(accounting: any) {
 
 export default function JobResults() {
   const { jobId } = useParams();
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [status, setStatus] = useState<string>('PENDING');
@@ -95,6 +95,9 @@ export default function JobResults() {
   const [limitModal, setLimitModal] = useState<LimitInfo | null>(null);
   const [saveErrorMsg, setSaveErrorMsg] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  // GAIVE modal
+  const [showGaiveModal, setShowGaiveModal] = useState(false);
 
   // --- MODO COMPARACIÓN ---
   const [compareMode, setCompareMode] = useState(false);
@@ -521,6 +524,23 @@ export default function JobResults() {
                 <SplitSquareHorizontal size={16} /> Comparar FASTA
               </button>
             )}
+            {status === 'COMPLETED' && outputs && (
+              <button
+                onClick={() => setShowGaiveModal(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 14px', fontSize: '0.85rem', fontWeight: 600,
+                  background: 'linear-gradient(135deg, rgba(120,80,255,0.25), rgba(0,200,255,0.2))',
+                  border: '1px solid rgba(0,200,255,0.4)', borderRadius: '8px',
+                  color: '#00c8ff', cursor: 'pointer', transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 14px rgba(0,200,255,0.3)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                title="Generar Informe Técnico GAIVE"
+              >
+                <FileText size={16} /> Informe GAIVE
+              </button>
+            )}
             <BiologistGuide />
             <div className={`badge status-${status.toLowerCase()}`}>{status}</div>
           </div>
@@ -904,6 +924,17 @@ export default function JobResults() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── MODAL: GAIVE Report ── */}
+      {showGaiveModal && outputs && (
+        <GaiveReportModal
+          jobId={jobId ?? ''}
+          outputs={outputs}
+          accounting={accounting}
+          fastaSequence={sessionStorage.getItem(`fasta_cache_${jobId}`) ?? ''}
+          onClose={() => setShowGaiveModal(false)}
+        />
       )}
     </div>
   );
