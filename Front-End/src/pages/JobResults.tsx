@@ -89,6 +89,16 @@ function getPlddtColor(val: number) {
   return '#f97316';
 }
 
+const getStatusLabel = (s: string) => {
+  switch (s) {
+    case 'PENDING': return 'En espera de recursos (CESGA)';
+    case 'RUNNING': return 'Analizando secuencia y plegando...';
+    case 'COMPLETED': return 'Análisis finalizado';
+    case 'FAILED': return 'Error de simulación';
+    default: return s;
+  }
+};
+
 export default function JobResults() {
   const { jobId } = useParams();
   const { user } = useAuth();
@@ -624,6 +634,73 @@ export default function JobResults() {
     );
   };
 
+/**
+ * Renderiza el panel de metadatos biológicos de la proteína (Organismo, UniProt, etc.)
+ */
+function ProteinMetaPanel({ meta }: { meta: any }) {
+  if (!meta) return null;
+
+  return (
+    <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {/* Fila de Insignias (Badges) */}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        {meta.organism && (
+          <div style={{
+            fontSize: '0.75rem', padding: '6px 14px', borderRadius: '50px',
+            background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)',
+            display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600
+          }}>
+            <Database size={14} /> {meta.organism}
+          </div>
+        )}
+        {meta.uniprot_id && (
+          <a
+            href={`https://www.uniprot.org/uniprotkb/${meta.uniprot_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: '0.75rem', padding: '6px 14px', borderRadius: '50px',
+              background: 'rgba(79, 172, 254, 0.1)', color: '#4facfe', border: '1px solid rgba(79, 172, 254, 0.3)',
+              display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none', fontWeight: 600
+            }}
+          >
+            <List size={14} /> UniProt: {meta.uniprot_id}
+          </a>
+        )}
+        {(meta.pdbId || meta.pdb_id) && (
+          <a
+            href={`https://www.rcsb.org/structure/${meta.pdbId || meta.pdb_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: '0.75rem', padding: '6px 14px', borderRadius: '50px',
+              background: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.3)',
+              display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, textDecoration: 'none'
+            }}
+          >
+            <ShieldCheck size={14} /> PDB: {meta.pdbId || meta.pdb_id}
+          </a>
+        )}
+      </div>
+
+      {/* Descripción con acento lateral */}
+      {meta.description && (
+        <div style={{
+          paddingLeft: '1rem', borderLeft: '3px solid var(--accent-cyan)',
+          maxWidth: '1200px'
+        }}>
+          <p style={{
+            margin: 0, fontSize: '0.88rem', lineHeight: '1.6',
+            color: 'var(--text-secondary)', fontWeight: 400
+          }}>
+            {meta.description}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
   const renderPaeSection = (confidence_data: any) => {
     if (!confidence_data?.pae_matrix) return null;
 
@@ -694,66 +771,48 @@ export default function JobResults() {
                 {outputs?.protein_metadata?.protein_name || outputs?.structural_data?.protein_id || (status === 'COMPLETED' ? 'Cargando resultados...' : 'Predicción en progreso...')}
               </h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
-                <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85em' }}>
+                <div style={{ color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: '0.85em', opacity: 0.7 }}>
                   {jobId}
                 </div>
-                {outputs?.protein_metadata?.organism && (
-                  <div style={{
-                    fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px',
-                    background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)',
-                    display: 'flex', alignItems: 'center', gap: '4px'
-                  }}>
-                    <Database size={10} /> {outputs.protein_metadata.organism}
-                  </div>
-                )}
-                {outputs?.protein_metadata?.uniprot_id && (
-                  <a 
-                    href={`https://www.uniprot.org/uniprotkb/${outputs.protein_metadata.uniprot_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px',
-                      background: 'rgba(79, 172, 254, 0.1)', color: '#4facfe', border: '1px solid rgba(79, 172, 254, 0.2)',
-                      display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none'
-                    }}
-                  >
-                    <List size={10} /> UniProt: {outputs.protein_metadata.uniprot_id}
-                  </a>
-                )}
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0, marginLeft: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
             {status === 'COMPLETED' && !compareMode && (
-              <button 
-                className="btn-secondary" 
+              <button
+                className="btn-secondary"
                 onClick={() => setCompareMode(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.85rem' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '0.85rem', height: '40px', background: 'rgba(255,255,255,0.03)' }}
               >
-                <SplitSquareHorizontal size={16} /> Comparar FASTA
+                <SplitSquareHorizontal size={18} /> Comparar FASTA
               </button>
             )}
             {status === 'COMPLETED' && outputs && (
               <button
                 onClick={() => setShowGaiveModal(true)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '6px 14px', fontSize: '0.85rem', fontWeight: 600,
-                  background: 'linear-gradient(135deg, rgba(120,80,255,0.25), rgba(0,200,255,0.2))',
-                  border: '1px solid rgba(0,200,255,0.4)', borderRadius: '8px',
-                  color: '#00c8ff', cursor: 'pointer', transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '8px 18px', fontSize: '0.85rem', fontWeight: 600,
+                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(29, 78, 216, 0.4))',
+                  border: '1px solid rgba(37, 99, 235, 0.6)', borderRadius: '10px',
+                  color: '#fff', cursor: 'pointer', transition: 'all 0.2s',
+                  height: '40px'
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 14px rgba(0,200,255,0.3)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
-                title="Generar Informe Técnico GAIVE"
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(37, 99, 235, 0.6), rgba(29, 78, 216, 0.6))'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(37, 99, 235, 0.4), rgba(29, 78, 216, 0.4))'; }}
               >
-                <FileText size={16} /> Informe GAIVE
+                <FileText size={18} /> Informe GAIVE
               </button>
             )}
             <BiologistGuide />
             
-            <div className={`badge status-${status.toLowerCase()}`}>{status}</div>
+            <div className={`badge status-${status.toLowerCase()}`} style={{ 
+              height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              padding: '0 16px', borderRadius: '10px', fontSize: '0.8rem' 
+            }}>
+              {status}
+            </div>
           </div>
         </div>
 
@@ -844,11 +903,35 @@ export default function JobResults() {
                 </div>
               )}
 
-              <div style={{ height: '550px' }}>
+              <div style={{ height: '550px', position: 'relative' }}>
                 <MoleculeViewer 
                   pdbData={outputs.structural_data.pdb_file} 
                   plddtData={outputs.structural_data?.confidence?.plddt_per_residue}
                 />
+                
+                {/* LEYENDA pLDDT INTEGRADA */}
+                <div style={{
+                  position: 'absolute', top: '20px', left: '20px',
+                  background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(10px)',
+                  padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+                  zIndex: 10, pointerEvents: 'none', boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+                }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: '10px', color: '#fff' }}>pLDDT Confianza:</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {[
+                      { color: '#3b82f6', label: '> 90', text: '(Muy Alta)' },
+                      { color: '#38bdf8', label: '70 - 90', text: '(Alta)' },
+                      { color: '#eab308', label: '50 - 70', text: '(Baja)' },
+                      { color: '#f97316', label: '< 50', text: '(Muy Baja)' }
+                    ].map(item => (
+                      <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+                        <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: item.color }} />
+                        <span style={{ color: '#cbd5e1', width: '45px' }}>{item.label}</span>
+                        <span style={{ color: '#94a3b8' }}>{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -856,8 +939,7 @@ export default function JobResults() {
             {renderDataPanels(outputs.biological_data, accounting, outputs.structural_data?.confidence)}
 
             {renderPaeSection(outputs.structural_data?.confidence)}
-
-          </div>
+          </>
         )}
       </div>
 
@@ -1030,11 +1112,35 @@ export default function JobResults() {
                     )}
                   </div>
                 </div>
-                <div style={{ height: '550px' }}>
+                <div style={{ height: '550px', position: 'relative' }}>
                   <MoleculeViewer 
                     pdbData={compareOutputs.structural_data.pdb_file} 
                     plddtData={compareOutputs.structural_data?.confidence?.plddt_per_residue}
                   />
+
+                  {/* LEYENDA pLDDT INTEGRADA (COMPARACIÓN) */}
+                  <div style={{
+                    position: 'absolute', top: '20px', left: '20px',
+                    background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(10px)',
+                    padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+                    zIndex: 10, pointerEvents: 'none', boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+                  }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: '10px', color: '#fff' }}>pLDDT Confianza:</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {[
+                        { color: '#3b82f6', label: '> 90', text: '(Muy Alta)' },
+                        { color: '#38bdf8', label: '70 - 90', text: '(Alta)' },
+                        { color: '#eab308', label: '50 - 70', text: '(Baja)' },
+                        { color: '#f97316', label: '< 50', text: '(Muy Baja)' }
+                      ].map(item => (
+                        <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
+                          <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: item.color }} />
+                          <span style={{ color: '#cbd5e1', width: '45px' }}>{item.label}</span>
+                          <span style={{ color: '#94a3b8' }}>{item.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
               
