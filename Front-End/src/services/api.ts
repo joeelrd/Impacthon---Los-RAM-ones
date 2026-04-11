@@ -45,5 +45,15 @@ export const api = {
     const response = await fetch(`${API_BASE}/jobs/${jobId}/accounting`);
     if (!response.ok) throw new Error('Error fetching accounting details');
     return response.json();
+  },
+
+  async askGemini(message: string, context: Record<string, any>) {
+    const response = await fetch(`${API_BASE}/chat/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, context }),
+    });
+    if (!response.ok) throw new Error('Error en consulta de chat');
+    return response.json();
   }
 };
