@@ -9,7 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Activity, Cpu, ArrowLeft, Download, AlertTriangle,
   Bookmark, BookmarkCheck, X, Crown, Trash2, Loader2,
-  SplitSquareHorizontal, Send, Leaf, CircleDollarSign, Zap, FileText
+  SplitSquareHorizontal, Send, Leaf, CircleDollarSign, Zap, FileText,
+  Database, List
 } from 'lucide-react';
 
 interface LimitInfo {
@@ -98,6 +99,10 @@ export default function JobResults() {
 
   // GAIVE modal
   const [showGaiveModal, setShowGaiveModal] = useState(false);
+
+  // Global panels
+  const [globalStats, setGlobalStats] = useState<any>(null);
+  const [proteinSamples, setProteinSamples] = useState<any[]>([]);
 
   // --- MODO COMPARACIÓN ---
   const [compareMode, setCompareMode] = useState(false);
@@ -190,6 +195,20 @@ export default function JobResults() {
     return () => clearInterval(pollInterval);
   }, [jobId]);
 
+  useEffect(() => {
+    const fetchGlobalData = async () => {
+      try {
+        const stats = await api.getGlobalStats();
+        setGlobalStats(stats);
+      } catch (err) { console.error("Global Stats error", err); }
+      try {
+        const samples = await api.getProteinSamples();
+        setProteinSamples(samples);
+      } catch (err) { console.error("Protein Samples error", err); }
+    };
+    fetchGlobalData();
+  }, []);
+
   const handleDownload = () => {
     if (!outputs?.structural_data?.pdb_file) return;
     const isCIF = outputs.structural_data.pdb_file.trim().startsWith('data_');
@@ -239,6 +258,65 @@ export default function JobResults() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const renderGlobalStatsPanel = () => {
+    if (!globalStats || proteinSamples.length === 0) return null;
+
+    return (
+      <div style={{ background: 'var(--bg-color-main)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', marginTop: '0.5rem' }}>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 1rem 0', color: 'var(--text-primary)' }}>
+          <Database size={20} color="var(--accent-cyan)" /> Estadísticas Globales CESGA
+        </h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          <div>
+            <div style={{ padding: '1rem', background: 'rgba(0,242,254,0.05)', borderRadius: '8px', border: '1px solid rgba(0,242,254,0.1)' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Proteínas Indexadas</span>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#00f2fe' }}>{globalStats.total_proteins}</div>
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Modelos Base: {globalStats.embedded_proteins} · Extendidos: {globalStats.extended_proteins}</div>
+            </div>
+            
+            <div style={{ marginTop: '1rem', padding: '0.5rem' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Distribución de Clases</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                {globalStats.by_category && Object.entries(globalStats.by_category)
+                  .filter(([k,v]) => Number(v) > 0 && k !== 'unknown')
+                  .slice(0, 5)
+                  .map(([cat, count]) => (
+                    <span key={cat} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', padding: '2px 8px', fontSize: '0.75rem', color: '#e2e8f0' }}>
+                      {cat}: {String(count)}
+                    </span>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <List size={14} /> Secuencias Recomendadas
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {proteinSamples.slice(0, 3).map((sample, idx) => (
+                <div key={idx} style={{ 
+                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', 
+                  borderRadius: '6px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
+                }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{sample.protein_name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{sample.uniprot_id} · {sample.sequence_length} AA</div>
+                  </div>
+                  <Link to="/" style={{ textDecoration: 'none', background: 'none', border: '1px solid var(--accent-cyan)', color: 'var(--accent-cyan)', borderRadius: '4px', padding: '4px 10px', fontSize: '0.75rem', cursor: 'pointer', transition: '0.2s', textAlign: 'center' }}>
+                    Explorar
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderDataPanels = (biological_data: any, dataAccounting: any, confidence_data?: any) => {
@@ -640,6 +718,7 @@ export default function JobResults() {
 
             {/* Paneles de Datos Renderizados */}
             {renderDataPanels(outputs.biological_data, accounting, outputs.structural_data?.confidence)}
+            {renderGlobalStatsPanel()}
           </div>
         )}
       </div>

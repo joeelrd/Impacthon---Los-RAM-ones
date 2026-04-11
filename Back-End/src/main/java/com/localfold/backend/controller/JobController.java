@@ -54,4 +54,14 @@ public class JobController {
     public ResponseEntity<Map<String, Object>> getJobAccounting(@PathVariable String id) {
         return ResponseEntity.ok(cesgaService.getJobAccounting(id));
     }
+
+    @GetMapping("/proteins/stats")
+    public ResponseEntity<Map<String, Object>> getGlobalStats() {
+        return ResponseEntity.ok(cesgaService.getGlobalStats());
+    }
+
+    @GetMapping("/proteins/samples")
+    public ResponseEntity<List> getProteinSamples() {
+        return ResponseEntity.ok(cesgaService.getProteinSamples());
+    }
 }

@@ -74,6 +74,18 @@ export const api = {
     return response.json();
   },
 
+  async getGlobalStats() {
+    const response = await fetch(`${API_BASE}/jobs/proteins/stats`);
+    if (!response.ok) throw new Error('Error fetching global stats');
+    return response.json();
+  },
+
+  async getProteinSamples() {
+    const response = await fetch(`${API_BASE}/jobs/proteins/samples`);
+    if (!response.ok) throw new Error('Error fetching protein samples');
+    return response.json();
+  },
+
   async askGemini(message: string, context: Record<string, any>) {
     const response = await fetch(`${API_BASE}/chat/ask`, {
       method: 'POST',
