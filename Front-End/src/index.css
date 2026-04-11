@@ -15,6 +15,21 @@
   --glass-backdrop: blur(12px);
 }
 
+body.light-mode {
+  --bg-color-main: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #eef2f6;
+  --border-color: #d1d5db;
+  --accent-cyan: #0284c7;
+  --accent-purple: #4f46e5;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -63,9 +78,9 @@ a {
 }
 
 .layout-container {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem 2rem;
 }
 
 /* Buttons */
