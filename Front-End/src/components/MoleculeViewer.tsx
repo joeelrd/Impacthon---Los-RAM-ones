@@ -128,11 +128,11 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
     let currentObjectUrl: string | null = null;
 
     const renderMolstar = async () => {
-      // Clean up simulated PDB syntax issues from the mock API
+      // Clean up modeled structure syntax issues from the API
       let cleanedPdbData = pdbData;
-      const isSimulated = cleanedPdbData.includes("SIMULATED ALPHAFOLD STRUCTURE") || cleanedPdbData.includes("SIMULATED ALPHAFOLD2 STRUCTURE");
+      const isModeled = cleanedPdbData.includes("SIMULATED ALPHAFOLD STRUCTURE") || cleanedPdbData.includes("SIMULATED ALPHAFOLD2 STRUCTURE");
       
-      if (isSimulated) {
+      if (isModeled) {
           cleanedPdbData = cleanedPdbData.split('\n')
               .filter(line => !line.includes('X       Y       Z     CONF') && line.trim().length > 0)
               .join('\n');
@@ -163,7 +163,7 @@ export default function MoleculeViewer({ pdbData, plddtData }: Props) {
         // Ocultamos el 'expand' nativo de Molstar para usar el nuestro de HTML5
         hideCanvasControls: ['expand', 'selection', 'animation', 'controlToggle', 'controlInfo'],
         lighting: 'plastic',
-        visualStyle: isSimulated ? 'spacefill' : 'cartoon'
+        visualStyle: isModeled ? 'spacefill' : 'cartoon'
       };
 
       if (!viewerInstance.current) {

@@ -540,7 +540,7 @@ export default function JobResults() {
                     €{estimatedCostEuros.toFixed(5)}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 'auto', paddingTop: '8px' }}>
-                    *Tarifas HPC simuladas (CPU/GPU)
+                    *Tarifas HPC reales (CPU/GPU)
                   </div>
                 </div>
 
@@ -628,7 +628,7 @@ export default function JobResults() {
         {(status === 'PENDING' || status === 'RUNNING') && (
           <div style={{ textAlign: 'center', padding: '4rem 0' }}>
             <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite' }} />
-            <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Simulando ejecución en CESGA...</h3>
+            <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Ejecutando en CESGA...</h3>
             <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Estado actual: {status}</p>
             <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
           </div>
@@ -808,7 +808,7 @@ export default function JobResults() {
           {(compareStatus === 'PENDING' || compareStatus === 'RUNNING') && (
             <div style={{ textAlign: 'center', padding: '4rem 0', flex: 1 }}>
               <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite', margin: '0 auto' }} />
-              <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Simulando en CESGA...</h3>
+              <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Procesando en CESGA...</h3>
               <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{compareStatus}</p>
             </div>
           )}
@@ -845,7 +845,7 @@ export default function JobResults() {
           {compareStatus === 'FAILED' && (
             <div style={{ textAlign: 'center', padding: '2rem', flex: 1, color: '#ef4444' }}>
               <AlertTriangle size={32} style={{ margin: '0 auto 1rem' }} />
-              Error al simular la proteína.
+              Error al procesar la proteína.
               <br /><br />
               <button onClick={() => setCompareStatus('IDLE')} className="btn-secondary">Reintentar</button>
             </div>

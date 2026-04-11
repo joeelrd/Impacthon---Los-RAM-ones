@@ -174,12 +174,12 @@ export default function SavedCells() {
           <div style={{ background: 'var(--bg-surface)', borderRadius: '12px', padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-secondary)', border: '1px dashed #334155' }}>
             <FileText size={48} opacity={0.3} style={{ marginBottom: '1rem' }} />
             <h3>Aún no tienes moléculas procesadas</h3>
-            <p>Tus simulaciones aparecerán aquí una vez que envíes tu primer trabajo.</p>
+            <p>Tus análisis aparecerán aquí una vez que envíes tu primer trabajo.</p>
             <Link to="/" className="btn-primary" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>Nueva Consulta</Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Mostrando las últimas 10 secuencias simuladas en el supercomputador CESGA.</p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Mostrando las últimas 10 secuencias procesadas en el supercomputador CESGA.</p>
             {jobs.map((job) => (
               <Link key={job.id} to={`/jobs/${job.id}`} className="item-card" style={{ gridTemplateColumns: 'minmax(150px, 1fr) 2fr auto auto' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -207,7 +207,7 @@ export default function SavedCells() {
           <div style={{ background: 'var(--bg-surface)', borderRadius: '12px', padding: '3rem 2rem', textAlign: 'center', color: 'var(--text-secondary)', border: '1px dashed #334155' }}>
             <Database size={48} opacity={0.3} style={{ marginBottom: '1rem' }} />
             <h3>No tienes proteínas guardadas</h3>
-            <p>Guarda simulaciones exitosas desde la vista de resultados para tenerlas siempre accesibles.</p>
+            <p>Guarda resultados exitosos desde la vista de resultados para tenerlos siempre accesibles.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

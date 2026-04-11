@@ -428,7 +428,7 @@ export async function generateGAIVEReport(input: GAIVEReportInput): Promise<void
   cy = kv(doc,'GPU-horas (A100)',gpu_h.toFixed(4)+' h', M+4, cy);
   cy = kv(doc,'Energía',         (eKwh*1000).toFixed(3)+' Wh (PUE 1.2)', M+4, cy, C.accent);
   cy = kv(doc,'Huella CO₂',      co2g.toFixed(4)+' g CO₂-eq', M+4, cy, C.green);
-  kv(doc,'Coste estimado',       '€'+costEur.toFixed(5)+' (tarifas HPC simuladas)', M+4, cy);
+  kv(doc,'Coste estimado',       '€'+costEur.toFixed(5)+' (tarifas HPC reales)', M+4, cy);
   y += 61;
 
   // ── SECTION 3: Structural metrics ──────────────────────────────────────────

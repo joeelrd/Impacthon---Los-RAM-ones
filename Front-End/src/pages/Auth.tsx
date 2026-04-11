@@ -60,7 +60,7 @@ export default function Auth() {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100vw', minHeight: '85vh', display: 'flex', overflow: 'hidden', margin: '0 calc(-50vw + 50%)' }}>
+    <div style={{ position: 'relative', width: '100vw', minHeight: '100vh', display: 'flex', overflow: 'hidden', margin: '0 calc(-50vw + 50%)' }}>
       <style>
         {`
           @keyframes spinADN {
@@ -79,10 +79,8 @@ export default function Auth() {
             position: 'absolute',
             top: '50%',
             left: '50%',
-            width: '130vw',
-            height: '130vw',
-            minWidth: '1200px',
-            minHeight: '1200px',
+            width: '150vmax',
+            height: '150vmax',
             opacity: 0.35,
             objectFit: 'cover',
             animation: 'spinADN 180s linear infinite'
