@@ -12,8 +12,18 @@ export default function MoleculeViewer({ pdbData }: Props) {
     if (!viewerRef.current || !pdbData || !(window as any).PDBeMolstarPlugin) return;
 
     const renderMolstar = () => {
+      // Clean up simulated PDB syntax issues from the mock API
+      let cleanedPdbData = pdbData;
+      const isSimulated = cleanedPdbData.includes("SIMULATED ALPHAFOLD STRUCTURE");
+      
+      if (isSimulated) {
+          cleanedPdbData = cleanedPdbData.split('\n')
+              .filter(line => !line.includes('X       Y       Z     CONF') && line.trim().length > 0)
+              .join('\n');
+      }
+
       // Create object URL from string
-      const blob = new Blob([pdbData], { type: 'text/plain' });
+      const blob = new Blob([cleanedPdbData], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
 
       const options = {
@@ -26,7 +36,7 @@ export default function MoleculeViewer({ pdbData }: Props) {
         hideControls: true,
         hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
         lighting: 'plastic',
-        visualStyle: 'cartoon'
+        visualStyle: isSimulated ? 'spacefill' : 'cartoon'
       };
 
       if (!viewerInstance.current) {
