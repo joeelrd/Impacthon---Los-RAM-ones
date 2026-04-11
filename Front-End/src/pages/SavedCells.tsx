@@ -36,19 +36,27 @@ export default function SavedCells() {
       if (!user?.id) return;
       setLoading(true);
       setError(null);
-      try {
-        const [jobsData, proteinsData] = await Promise.all([
-          api.getJobHistory(user.id),
-          api.getSavedProteins(user.id)
-        ]);
-        setJobs((jobsData || []).slice(0, 10)); // Mostrar solo 10 en el historial
-        setSavedProteins(proteinsData || []);
-      } catch (err) {
-        console.error("Error al obtener datos", err);
-        setError("No se pudieron cargar los datos. Inténtalo de nuevo.");
-      } finally {
-        setLoading(false);
+      
+      // Fetch independently so one failure doesn't block the other
+      const [jobsResult, proteinsResult] = await Promise.allSettled([
+        api.getJobHistory(user.id),
+        api.getSavedProteins(user.id)
+      ]);
+      
+      if (jobsResult.status === 'fulfilled') {
+        setJobs((jobsResult.value || []).slice(0, 10));
+      } else {
+        console.warn("No se pudo cargar el historial de jobs:", jobsResult.reason);
       }
+      
+      if (proteinsResult.status === 'fulfilled') {
+        setSavedProteins(proteinsResult.value || []);
+      } else {
+        console.warn("No se pudieron cargar las proteínas guardadas:", proteinsResult.reason);
+        setError("No se pudieron cargar las proteínas guardadas.");
+      }
+      
+      setLoading(false);
     }
     fetchData();
   }, [user]);

@@ -14,11 +14,9 @@ public class SavedProteinEntity {
     @Column(nullable = false)
     private String proteinName;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String pdbData;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String fastaSequence;
 
