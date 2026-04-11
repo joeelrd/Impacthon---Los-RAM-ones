@@ -82,5 +82,48 @@ export const api = {
     });
     if (!response.ok) throw new Error('Error en consulta de chat');
     return response.json();
-  }
+  },
+
+  // --- Saved Proteins ---
+
+  async getSavedProteinCount(userId: number) {
+    const response = await fetch(`${API_BASE}/saved-proteins/count?userId=${userId}`);
+    if (!response.ok) throw new Error('Error fetching saved protein count');
+    return response.json(); // { count, limit, isPremium }
+  },
+
+  async getSavedProteins(userId: number) {
+    const response = await fetch(`${API_BASE}/saved-proteins?userId=${userId}`);
+    if (!response.ok) throw new Error('Error fetching saved proteins');
+    return response.json();
+  },
+
+  async saveProtein(data: {
+    userId: number;
+    proteinName: string;
+    pdbData: string;
+    fastaSequence?: string;
+    jobId?: string;
+  }) {
+    const response = await fetch(`${API_BASE}/saved-proteins`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (response.status === 429) {
+      const err = await response.json();
+      throw Object.assign(new Error(err.message || 'Límite alcanzado'), { limitReached: true, ...err });
+    }
+    if (!response.ok) throw new Error('Error al guardar proteína');
+    return response.json();
+  },
+
+  async deleteSavedProtein(id: number, userId: number) {
+    const response = await fetch(`${API_BASE}/saved-proteins/${id}?userId=${userId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Error al eliminar proteína');
+    return response.json();
+  },
 };
+

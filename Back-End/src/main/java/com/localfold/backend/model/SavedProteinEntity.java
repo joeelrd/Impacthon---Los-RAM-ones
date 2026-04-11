@@ -18,6 +18,10 @@ public class SavedProteinEntity {
     @Column(columnDefinition = "TEXT")
     private String pdbData;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String fastaSequence;
+
     private String jobId;
 
     private LocalDateTime createdAt;
@@ -28,9 +32,10 @@ public class SavedProteinEntity {
 
     public SavedProteinEntity() {}
 
-    public SavedProteinEntity(String proteinName, String pdbData, String jobId, LocalDateTime createdAt, User user) {
+    public SavedProteinEntity(String proteinName, String pdbData, String fastaSequence, String jobId, LocalDateTime createdAt, User user) {
         this.proteinName = proteinName;
         this.pdbData = pdbData;
+        this.fastaSequence = fastaSequence;
         this.jobId = jobId;
         this.createdAt = createdAt;
         this.user = user;
@@ -44,6 +49,9 @@ public class SavedProteinEntity {
 
     public String getPdbData() { return pdbData; }
     public void setPdbData(String pdbData) { this.pdbData = pdbData; }
+
+    public String getFastaSequence() { return fastaSequence; }
+    public void setFastaSequence(String fastaSequence) { this.fastaSequence = fastaSequence; }
 
     public String getJobId() { return jobId; }
     public void setJobId(String jobId) { this.jobId = jobId; }

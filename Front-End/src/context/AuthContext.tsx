@@ -5,6 +5,7 @@ interface AuthUser {
     name: string;
     email: string;
     token: string;
+    isPremium: boolean;
 }
 
 interface AuthContextType {

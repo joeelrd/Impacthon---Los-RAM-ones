@@ -33,7 +33,7 @@ public class AuthController {
 
         // Retornar la nueva sesión directamente
         String tokenDummy = UUID.randomUUID().toString();
-        return ResponseEntity.ok(new AuthResponse(newUser.getId(), newUser.getName(), newUser.getEmail(), tokenDummy));
+        return ResponseEntity.ok(new AuthResponse(newUser.getId(), newUser.getName(), newUser.getEmail(), tokenDummy, newUser.isPremium()));
     }
 
     @PostMapping("/login")
@@ -51,6 +51,6 @@ public class AuthController {
 
         // Simulación de generador de sesión rápida
         String pseudoToken = UUID.randomUUID().toString() + "-" + user.getId();
-        return ResponseEntity.ok(new AuthResponse(user.getId(), user.getName(), user.getEmail(), pseudoToken));
+        return ResponseEntity.ok(new AuthResponse(user.getId(), user.getName(), user.getEmail(), pseudoToken, user.isPremium()));
     }
 }
