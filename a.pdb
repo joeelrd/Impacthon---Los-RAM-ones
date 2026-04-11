@@ -1,0 +1,11 @@
+HEADER    HEMOGLOBIN                      07-JUL-78   1HBA              
+TITLE     THE CRYSTAL STRUCTURE OF HUMAN DEOXYHAEMOGLOBIN AT 1.74 
+TITLE    2 ANGSTROMS RESOLUTION
+REMARK    CHAIN A IS THE ALPHA SUBUNIT WITH HEME
+ATOM      1  N   VAL A   1     -21.894   8.903   4.127  1.00 11.99           N
+ATOM      2  CA  VAL A   1     -21.522   8.041   3.066  1.00 11.18           C
+ATOM      3  C   VAL A   1     -20.098   8.158   2.553  1.00 10.22           C
+ATOM      4  O   VAL A   1     -19.733   9.116   1.885  1.00 10.48           O
+ATOM      5  CB  VAL A   1     -22.480   8.183   1.909  1.00 13.27           C
+HETATM 1203 FE   HEM A 143       1.914  -0.215  -1.856  1.00 14.08          FE
+END
