@@ -27,7 +27,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   return (
-    <>
+    <div className="layout-container">
       <header className="app-header glass-panel">
         <Link to="/" className="app-logo">
           <Activity color="#00f2fe" size={28} />
@@ -59,7 +59,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
       <main className="animate-fade-in">
         {children}
       </main>
-    </>
+    </div>
   );
 }
 
@@ -67,14 +67,12 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="layout-container">
-          <Routes>
-            <Route path="/login" element={<Auth />} />
-            <Route path="/" element={<ProtectedRoute><MainLayout><JobSubmit /></MainLayout></ProtectedRoute>} />
-            <Route path="/saved" element={<ProtectedRoute><MainLayout><SavedCells /></MainLayout></ProtectedRoute>} />
-            <Route path="/jobs/:jobId" element={<ProtectedRoute><MainLayout><JobResults /></MainLayout></ProtectedRoute>} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/login" element={<Auth />} />
+          <Route path="/" element={<ProtectedRoute><MainLayout><JobSubmit /></MainLayout></ProtectedRoute>} />
+          <Route path="/saved" element={<ProtectedRoute><MainLayout><SavedCells /></MainLayout></ProtectedRoute>} />
+          <Route path="/jobs/:jobId" element={<ProtectedRoute><MainLayout><JobResults /></MainLayout></ProtectedRoute>} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );

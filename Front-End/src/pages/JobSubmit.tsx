@@ -307,21 +307,81 @@ export default function JobSubmit() {
               onChange={e => setSidebarSearch(e.target.value)}
               style={{ marginBottom: '8px' }}
             />
-            <div style={{ position: 'relative' }}>
-              <select
-                className="sidebar-search"
-                style={{ cursor: 'pointer', appearance: 'none', paddingRight: '28px', color: selectedCategoryFilter === 'all' ? 'var(--text-secondary)' : '#f8f8f2' }}
-                value={selectedCategoryFilter}
-                onChange={e => setSelectedCategoryFilter(e.target.value)}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setSelectedCategoryFilter('all')}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '100px',
+                  fontSize: '0.75rem',
+                  fontWeight: selectedCategoryFilter === 'all' ? 700 : 500,
+                  fontFamily: 'var(--font-family)',
+                  cursor: 'pointer',
+                  border: '1px solid',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: selectedCategoryFilter === 'all' ? 'rgba(0, 242, 254, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                  borderColor: selectedCategoryFilter === 'all' ? 'rgba(0, 242, 254, 0.4)' : 'rgba(255, 255, 255, 0.1)',
+                  color: selectedCategoryFilter === 'all' ? '#00f2fe' : 'var(--text-secondary)',
+                  boxShadow: selectedCategoryFilter === 'all' ? '0 0 15px rgba(0, 242, 254, 0.2)' : 'none',
+                  backdropFilter: 'blur(4px)',
+                }}
+                onMouseEnter={e => {
+                  if (selectedCategoryFilter !== 'all') {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (selectedCategoryFilter !== 'all') {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  }
+                }}
               >
-                <option value="all">Todas las categorías</option>
-                {Object.keys(groupedProteins).sort().map(cat => (
-                  <option key={cat} value={cat} style={{ color: '#0f172a' }}>{cat}</option>
-                ))}
-              </select>
-              <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-secondary)' }}>
-                <ChevronRight size={14} style={{ transform: 'rotate(90deg)' }} />
-              </div>
+                Todas
+              </button>
+              {Object.keys(groupedProteins).sort().map(cat => {
+                const s = getCategoryStyle(cat);
+                const isActive = selectedCategoryFilter === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategoryFilter(isActive ? 'all' : cat)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '100px',
+                      fontSize: '0.75rem',
+                      fontWeight: isActive ? 700 : 500,
+                      fontFamily: 'var(--font-family)',
+                      cursor: 'pointer',
+                      border: '1px solid',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      background: isActive ? s.bg : 'rgba(255, 255, 255, 0.03)',
+                      borderColor: isActive ? s.border : 'rgba(255, 255, 255, 0.1)',
+                      color: isActive ? s.text : 'var(--text-secondary)',
+                      boxShadow: isActive ? `0 0 15px ${s.glow}` : 'none',
+                      textTransform: 'capitalize',
+                      backdropFilter: 'blur(4px)',
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = s.bg;
+                        e.currentTarget.style.borderColor = s.border;
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      }
+                    }}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -425,7 +485,7 @@ export default function JobSubmit() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
             <p style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: '1.7', maxWidth: '520px', fontSize: '0.95rem' }}>
               Introduce tu secuencia proteica en formato FASTA o selecciona una del catálogo lateral.
-              Nuestro pipeline procesará tu solicitud usando la potencia del supercomputador CESGA simulado.
+              Nuestro pipeline procesará tu solicitud usando la potencia del supercomputador CESGA.
             </p>
             <BiologistGuide />
           </div>
@@ -566,7 +626,7 @@ MQIFVKTLTGKTITLEVEPSDTIENVKAKIQ..."
               </div>
 
               <p style={{ color: '#e2e8f0', lineHeight: '1.65', fontSize: '0.92rem', marginBottom: '1.5rem' }}>
-                Para poder enviar una nueva simulación al supercomputador, necesitas tener espacio libre en tu área de trabajo. Tienes el límite de <strong style={{ color: '#fbbf24' }}>{limitModal.limit} proteínas</strong> según tu plan{' '}
+                Para poder enviar una nueva solicitud al supercomputador, necesitas tener espacio libre en tu área de trabajo. Tienes el límite de <strong style={{ color: '#fbbf24' }}>{limitModal.limit} proteínas</strong> según tu plan{' '}
                 <strong>{limitModal.isPremium ? 'Premium' : 'Free'}</strong>.
               </p>
 

@@ -26,7 +26,7 @@ export default function BiologistGuide() {
         onMouseOver={e => e.currentTarget.style.background = 'rgba(101, 203, 243, 0.2)'}
         onMouseOut={e => e.currentTarget.style.background = 'rgba(101, 203, 243, 0.1)'}
       >
-        <BookOpen size={18} /> Guía rápida para Biólogos
+        <BookOpen size={18} /> Guía rápida
       </button>
 
       {isOpen && (
@@ -36,7 +36,6 @@ export default function BiologistGuide() {
           background: 'rgba(0, 0, 0, 0.85)', // Fondo oscuro para tapar lo de atrás
           backdropFilter: 'blur(4px)',
           display: 'flex',
-          marginTop: '100px',
           justifyContent: 'center',
           alignItems: 'center', // ESTO LO CENTRA PERFECTAMENTE EN LA PANTALLA
           padding: '1rem',
@@ -74,7 +73,7 @@ export default function BiologistGuide() {
                 color: 'var(--accent-cyan)',
                 fontSize: '1.25rem'
               }}>
-                <HelpCircle size={24} /> Guía Práctica de Resultados
+                <HelpCircle size={24} /> Guía rápida
               </h2>
               <button
                 onClick={() => setIsOpen(false)}
