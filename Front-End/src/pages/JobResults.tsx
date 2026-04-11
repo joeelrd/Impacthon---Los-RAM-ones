@@ -823,7 +823,7 @@ function ProteinMetaPanel({ meta }: { meta: any }) {
         {(status === 'PENDING' || status === 'RUNNING') && (
           <div style={{ textAlign: 'center', padding: '4rem 0' }}>
             <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite' }} />
-            <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Simulando ejecución en CESGA...</h3>
+            <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Ejecutando en CESGA...</h3>
             <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Estado actual: {getStatusLabel(status)}</p>
             <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
           </div>
@@ -1028,7 +1028,7 @@ function ProteinMetaPanel({ meta }: { meta: any }) {
           {(compareStatus === 'PENDING' || compareStatus === 'RUNNING') && (
             <div style={{ textAlign: 'center', padding: '4rem 0', flex: 1 }}>
               <Activity size={48} className="gradient-text" style={{ animation: 'spin 2s linear infinite', margin: '0 auto' }} />
-              <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Simulando en CESGA...</h3>
+              <h3 style={{ marginTop: '1.5rem', color: 'var(--accent-cyan)' }}>Ejecutando en CESGA...</h3>
               <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Estado actual: {getStatusLabel(compareStatus)}</p>
             </div>
           )}

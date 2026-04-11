@@ -25,13 +25,13 @@ const aminoAcidMap: Record<string, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string; glow: string }> = {
-  'signaling':   { bg: 'rgba(79,172,254,0.12)',  text: '#4facfe', border: 'rgba(79,172,254,0.3)',  glow: 'rgba(79,172,254,0.2)' },
-  'immunity':    { bg: 'rgba(16,185,129,0.12)',  text: '#10b981', border: 'rgba(16,185,129,0.3)',  glow: 'rgba(16,185,129,0.2)' },
-  'structural':  { bg: 'rgba(168,85,247,0.12)',  text: '#a855f7', border: 'rgba(168,85,247,0.3)',  glow: 'rgba(168,85,247,0.2)' },
-  'transport':   { bg: 'rgba(251,191,36,0.12)',  text: '#fbbf24', border: 'rgba(251,191,36,0.3)',  glow: 'rgba(251,191,36,0.2)' },
-  'catalysis':   { bg: 'rgba(239,68,68,0.12)',   text: '#ef4444', border: 'rgba(239,68,68,0.3)',   glow: 'rgba(239,68,68,0.2)' },
-  'metabolism':  { bg: 'rgba(249,115,22,0.12)',  text: '#f97316', border: 'rgba(249,115,22,0.3)',  glow: 'rgba(249,115,22,0.2)' },
-  'default':     { bg: 'rgba(0,242,254,0.10)',   text: '#00f2fe', border: 'rgba(0,242,254,0.25)',  glow: 'rgba(0,242,254,0.15)' },
+  'signaling': { bg: 'rgba(79,172,254,0.12)', text: '#4facfe', border: 'rgba(79,172,254,0.3)', glow: 'rgba(79,172,254,0.2)' },
+  'immunity': { bg: 'rgba(16,185,129,0.12)', text: '#10b981', border: 'rgba(16,185,129,0.3)', glow: 'rgba(16,185,129,0.2)' },
+  'structural': { bg: 'rgba(168,85,247,0.12)', text: '#a855f7', border: 'rgba(168,85,247,0.3)', glow: 'rgba(168,85,247,0.2)' },
+  'transport': { bg: 'rgba(251,191,36,0.12)', text: '#fbbf24', border: 'rgba(251,191,36,0.3)', glow: 'rgba(251,191,36,0.2)' },
+  'catalysis': { bg: 'rgba(239,68,68,0.12)', text: '#ef4444', border: 'rgba(239,68,68,0.3)', glow: 'rgba(239,68,68,0.2)' },
+  'metabolism': { bg: 'rgba(249,115,22,0.12)', text: '#f97316', border: 'rgba(249,115,22,0.3)', glow: 'rgba(249,115,22,0.2)' },
+  'default': { bg: 'rgba(0,242,254,0.10)', text: '#00f2fe', border: 'rgba(0,242,254,0.25)', glow: 'rgba(0,242,254,0.15)' },
 };
 
 function getCategoryStyle(category: string) {
@@ -50,8 +50,8 @@ function cifToFasta(cifText: string): string {
   // Try simpler one-line format if semicolon block not found
   const simpleMatch = cifText.match(/_entity_poly\.pdbx_seq_one_letter_code\s+([A-Z\s]+)/i);
   if (simpleMatch && simpleMatch[1]) {
-     const seq = simpleMatch[1].replace(/\s+/g, '');
-     if (seq.length > 5) return '>Extracted_from_CIF\n' + seq;
+    const seq = simpleMatch[1].replace(/\s+/g, '');
+    if (seq.length > 5) return '>Extracted_from_CIF\n' + seq;
   }
   return cifText;
 }
@@ -175,15 +175,15 @@ export default function JobSubmit() {
         if (event.target && typeof event.target.result === 'string') {
           let text = event.target.result;
           const fileNameInput = file.name.toLowerCase();
-          
+
           if (fileNameInput.endsWith('.pdb') || text.startsWith('HEADER') || text.startsWith('ATOM  ')) {
             setOriginalPdb(text);
             text = pdbToFasta(text);
           } else if (fileNameInput.endsWith('.cif') || text.startsWith('data_')) {
             setOriginalPdb(text);
             text = cifToFasta(text);
-          } else { 
-            setOriginalPdb(''); 
+          } else {
+            setOriginalPdb('');
           }
           setFasta(text);
         }
@@ -491,7 +491,7 @@ export default function JobSubmit() {
             Inicia tu Predicción 3D
           </h1>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-            <p style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: '1.7', maxWidth: '520px', fontSize: '0.95rem' }}>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: '1.8', flex: 1, paddingRight: '3rem', fontSize: '1.1rem' }}>
               Introduce tu secuencia proteica en formato FASTA o selecciona una del catálogo lateral.
               Nuestro pipeline procesará tu solicitud usando la potencia del supercomputador CESGA.
             </p>
