@@ -1,6 +1,32 @@
 const API_BASE = 'http://localhost:8080/api';
 
 export const api = {
+  async register(data: { name: string; email: string; password: string }) {
+    const response = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || 'Error en el registro');
+    }
+    return response.json();
+  },
+
+  async login(data: { email: string; password: string }) {
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || 'Credenciales incorrectas');
+    }
+    return response.json();
+  },
+
   async submitJob(fastaSequence: string, fastaFilename: string) {
     const response = await fetch(`${API_BASE}/jobs/submit`, {
       method: 'POST',
