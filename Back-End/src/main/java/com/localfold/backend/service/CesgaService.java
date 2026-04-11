@@ -112,4 +112,16 @@ public class CesgaService {
             return new HashMap<>(); // Return empty if not available
         }
     }
+
+    public Map<String, Object> getGlobalStats() {
+        String statsUrl = cesgaApiUrl + "/proteins/stats";
+        ResponseEntity<Map> response = restTemplate.getForEntity(statsUrl, Map.class);
+        return response.getBody();
+    }
+
+    public List getProteinSamples() {
+        String samplesUrl = cesgaApiUrl + "/proteins/samples";
+        ResponseEntity<List> response = restTemplate.getForEntity(samplesUrl, List.class);
+        return response.getBody();
+    }
 }
