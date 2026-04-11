@@ -11,7 +11,9 @@ export default function MoleculeViewer({ pdbData }: Props) {
   useEffect(() => {
     if (!viewerRef.current || !pdbData || !(window as any).PDBeMolstarPlugin) return;
 
-    const renderMolstar = () => {
+    let isMounted = true;
+
+    const renderMolstar = async () => {
       // Clean up simulated PDB syntax issues from the mock API
       let cleanedPdbData = pdbData;
       const isSimulated = cleanedPdbData.includes("SIMULATED ALPHAFOLD STRUCTURE");
@@ -43,16 +45,29 @@ export default function MoleculeViewer({ pdbData }: Props) {
         viewerInstance.current = new (window as any).PDBeMolstarPlugin();
       }
       
-      viewerInstance.current.render(viewerRef.current, options);
+      try {
+        if (isMounted && viewerRef.current) {
+          await viewerInstance.current.render(viewerRef.current, options);
+        }
+      } catch (e) {
+        console.warn("Molstar render cancelled or failed:", e);
+      }
     };
 
     renderMolstar();
 
     // Clean up
     return () => {
-      // PDBeMolstarPlugin handles replacements internally if re-rendered.
-      // Free object URL to prevent memory leaks if effect re-runs
-      // URL.revokeObjectURL(url) happens in a timeout because render is async
+      isMounted = false;
+      if (viewerInstance.current) {
+        try {
+          if (viewerInstance.current.plugin) viewerInstance.current.plugin.clear();
+        } catch (e) {}
+        viewerInstance.current = null;
+      }
+      if (viewerRef.current) {
+        viewerRef.current.innerHTML = '';
+      }
     };
   }, [pdbData]);
 

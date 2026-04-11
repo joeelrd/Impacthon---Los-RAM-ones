@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { Send, FileText, Clock, Search, Loader2 } from 'lucide-react';
+import { Send, FileText, Clock, Search, Loader2, AlertTriangle, X } from 'lucide-react';
+import BiologistGuide from '../components/BiologistGuide';
 
 interface PredefinedProtein {
   protein_id: string;
@@ -55,6 +56,7 @@ export default function JobSubmit() {
   const [proteins, setProteins] = useState<PredefinedProtein[]>([]);
   const [selectedProtein, setSelectedProtein] = useState('');
   const [loadingProteins, setLoadingProteins] = useState(false);
+  const [errorModal, setErrorModal] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function JobSubmit() {
       setFasta('');
       return;
     }
-    
+
     setLoadingProteins(true);
     try {
       const details = await api.getProteinDetails(id);
@@ -85,7 +87,7 @@ export default function JobSubmit() {
       }
     } catch (err) {
       console.error("Error fetching protein details", err);
-      alert("No se pudo cargar la secuencia de la proteína.");
+      setErrorModal("No se pudo cargar la secuencia de la proteína catalogada. Verifica tu conexión con la base de datos.");
     } finally {
       setLoadingProteins(false);
     }
@@ -107,7 +109,7 @@ export default function JobSubmit() {
       }
     } catch (err) {
       console.error(err);
-      alert('Error enviando la tarea al supercomputador.');
+      setErrorModal("Hubo un error al enviar la petición al CESGA. La petición podría ser erronea o el servicio backend podría no estar disponible.");
     } finally {
       setLoading(false);
     }
@@ -153,16 +155,19 @@ export default function JobSubmit() {
       <h1 className="gradient-text" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
         Inicia tu Predicción 3D
       </h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: '1.6' }}>
-        Introduce tu secuencia proteica en formato FASTA. Nuestro pipeline procesará 
-        tu solicitud utilizando la potencia del supercomputador CESGA simulado.
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+        <p style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: '1.6', maxWidth: '600px' }}>
+          Introduce tu secuencia proteica en formato FASTA. Nuestro pipeline procesará
+          tu solicitud utilizando la potencia del supercomputador CESGA simulado.
+        </p>
+        <BiologistGuide />
+      </div>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'center' }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search size={18} style={{ position: 'absolute', top: '12px', left: '16px', color: 'var(--text-secondary)' }} />
-          <select 
-            className="input-styled" 
+          <select
+            className="input-styled"
             style={{ paddingLeft: '48px', cursor: 'pointer', appearance: 'none', background: 'var(--bg-card)' }}
             value={selectedProtein}
             onChange={handleProteinSelect}
@@ -226,17 +231,104 @@ export default function JobSubmit() {
              </div>
           )}
         </div>
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Clock size={16} /> 
+            <Clock size={16} />
             <span>Tiempo extimado en cola: ~5s</span>
           </div>
           <button type="submit" className="btn-primary" disabled={loading || !fasta.trim()}>
-            {loading ? 'Submitting...' : <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Send size={18}/> Enviar Tarea</span>}
+            {loading ? 'Submitting...' : <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Send size={18} /> Enviar Tarea</span>}
           </button>
         </div>
       </form>
+
+      {/* --- MODAL DE ERROR ESTILO BIOLOGIST GUIDE --- */}
+      {errorModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '1rem',
+          zIndex: 9999
+        }}>
+          <div className="animate-fade-in" style={{
+            backgroundColor: '#0f172a',
+            maxWidth: '500px',
+            width: '100%',
+            borderRadius: '12px',
+            border: '1px solid #ef4444',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.2)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '1.25rem 1.5rem',
+              backgroundColor: '#0f172a',
+              borderBottom: '1px solid #334155',
+              zIndex: 10
+            }}>
+              <h2 style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                margin: 0,
+                color: '#ef4444',
+                fontSize: '1.2rem'
+              }}>
+                <AlertTriangle size={24} /> Acción Interrumpida
+              </h2>
+              <button
+                type="button"
+                onClick={() => setErrorModal(null)}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+                onMouseOver={e => e.currentTarget.style.color = '#fff'}
+                onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div style={{
+              padding: '1.5rem',
+              color: '#e2e8f0',
+              lineHeight: '1.6',
+              fontSize: '1rem',
+              background: 'linear-gradient(145deg, rgba(30,30,50,0.4), rgba(15,15,25,0.4))'
+            }}>
+              {errorModal}
+            </div>
+
+            <div style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #1e293b', background: '#0f172a' }}>
+              <button
+                type="button"
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+                onClick={() => setErrorModal(null)}
+                onMouseOver={e => e.currentTarget.style.background = '#dc2626'}
+                onMouseOut={e => e.currentTarget.style.background = '#ef4444'}
+              >
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

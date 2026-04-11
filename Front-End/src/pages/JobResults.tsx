@@ -2,16 +2,19 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import MoleculeViewer from '../components/MoleculeViewer';
+<<<<<<< HEAD
 import ChatbotPanel from '../components/ChatbotPanel';
 import { ShieldCheck, Activity, Cpu, ArrowLeft, Download, AlertTriangle, Info, Bot } from 'lucide-react';
+=======
+import BiologistGuide from '../components/BiologistGuide';
+import { ShieldCheck, Activity, Cpu, ArrowLeft, Download, AlertTriangle, Info, Bot, Zap } from 'lucide-react';
+>>>>>>> FuncionesFabrizio
 
 export default function JobResults() {
   const { jobId } = useParams();
   const [status, setStatus] = useState<string>('PENDING');
   const [outputs, setOutputs] = useState<any>(null);
   const [accounting, setAccounting] = useState<any>(null);
-  const [tooltip, setTooltip] = useState<{x:number, y:number, text:string} | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!jobId) return;
@@ -65,41 +68,7 @@ export default function JobResults() {
     return () => clearInterval(pollInterval);
   }, [jobId]);
 
-  useEffect(() => {
-    // Draw PAE Matrix Heatmap when outputs load
-    if (outputs?.structural_data?.pae_matrix && canvasRef.current) {
-      const pae = outputs.structural_data.pae_matrix;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      const size = pae.length;
-      canvas.width = size;
-      canvas.height = size;
-      
-      const imgData = ctx.createImageData(size, size);
-      
-      for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-          const val = pae[i][j];
-          // PAE values min 0 (good, blue), max ~30 (bad, yellow)
-          const normalized = Math.min(val / 30, 1.0);
-          
-          // Color scale: Blue -> Cyan -> Yellow
-          let r = Math.floor(normalized * 255);
-          let g = Math.floor(normalized * 255 + (1-normalized)*150);
-          let b = Math.floor((1 - normalized) * 255);
 
-          const pixelIndex = (i * size + j) * 4;
-          imgData.data[pixelIndex] = r;
-          imgData.data[pixelIndex + 1] = g;
-          imgData.data[pixelIndex + 2] = b;
-          imgData.data[pixelIndex + 3] = 255; // Alpha
-        }
-      }
-      ctx.putImageData(imgData, 0, 0);
-    }
-  }, [outputs]);
 
   const handleDownload = () => {
     if (!outputs?.structural_data?.pdb_file) return;
@@ -113,22 +82,21 @@ export default function JobResults() {
     document.body.removeChild(a);
   };
 
-  const handleMouseMovePAE = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!outputs?.structural_data?.pae_matrix || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = Math.floor((e.clientX - rect.left) * scaleX);
-    const y = Math.floor((e.clientY - rect.top) * scaleY);
-    const pae = outputs.structural_data.pae_matrix;
-    if(pae[x] && pae[x][y] !== undefined) {
-      setTooltip({ x: e.clientX, y: e.clientY - 30, text: `Error estimado res ${x}-${y}: ${pae[x][y].toFixed(2)}Å`});
-    }
-  };
 
+
+<<<<<<< HEAD
   // Ya no usamos el texto estático, pero si quieres podemos dejarlo
   // const aiAnalysis = () => { ... }
+=======
+  const aiAnalysis = () => {
+    if (!outputs?.biological_data) return "Analizando estructura...";
+    const sol = outputs.biological_data.solubility_score;
+    const tox = outputs.biological_data.toxicity_alerts?.length || 0;
+    if (sol > 70 && tox === 0) return "Nuestra IA determina que esta proteína tiene una viabilidad alta. Presenta una solubilidad excelente en entornos acuosos y no muestra alertas de toxicidad, haciéndola ideal para síntesis en laboratorio.";
+    if (sol <= 70 && tox === 0) return "La IA sugiere atención: la proteína es segura pero su baja solubilidad podría causar agregación intracelular. Considera optimizar regiones hidrofóbicas.";
+    return "ALERTA IA: Se han detectado secuencias perjudiciales o tóxicas. Revisar los dominios expuestos antes de proceder a la expresión in-vivo.";
+  };
+>>>>>>> FuncionesFabrizio
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
@@ -146,6 +114,16 @@ export default function JobResults() {
             {status}
           </div>
         </div>
+<<<<<<< HEAD
+=======
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <BiologistGuide />
+          <div className={`badge status-${status.toLowerCase()}`}>
+            {status}
+          </div>
+        </div>
+      </div>
+>>>>>>> FuncionesFabrizio
 
         {(status === 'PENDING' || status === 'RUNNING') && (
           <div style={{ textAlign: 'center', padding: '4rem 0' }}>
@@ -158,20 +136,30 @@ export default function JobResults() {
           </div>
         )}
 
+<<<<<<< HEAD
         {status === 'COMPLETED' && outputs && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             {/* Visor 3D */}
+=======
+      {status === 'COMPLETED' && outputs && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '2rem' }}>
+
+          {/* Columna Izquierda: Visor 3D y Heatmap */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+>>>>>>> FuncionesFabrizio
             <div style={{ background: 'var(--bg-color-main)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', position: 'relative' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ShieldCheck size={20} color="var(--accent-cyan)"/> Estructura Plegada</h3>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><ShieldCheck size={20} color="var(--accent-cyan)" /> Estructura Plegada</h3>
                 <button className="btn-secondary" onClick={handleDownload} style={{ padding: '6px 12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Download size={16}/> PDB
+                  <Download size={16} /> PDB
                 </button>
               </div>
               <div style={{ height: '550px' }}>
                 <MoleculeViewer pdbData={outputs.structural_data.pdb_file} />
               </div>
+<<<<<<< HEAD
 
               {/* PAE Heatmap */}
               {outputs.structural_data.pae_matrix && (
@@ -205,6 +193,35 @@ export default function JobResults() {
                   <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
                     <div style={{ width: `${outputs.biological_data?.solubility_score || 0}%`, background: 'var(--accent-cyan)', height: '100%', borderRadius: '3px' }}></div>
                   </div>
+=======
+            </div>
+
+          </div>
+
+          {/* Columna Derecha: Metadatos Creativos y Analista IA */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+            {/* Analista IA */}
+            <div style={{ background: 'linear-gradient(145deg, rgba(30,30,50,0.8), rgba(15,15,25,0.8))', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--accent-cyan)' }}>
+              <h4 style={{ color: 'var(--accent-cyan)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Bot size={18} /> Analista de IA
+              </h4>
+              <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#e0e0f0' }}>
+                {aiAnalysis()}
+              </p>
+            </div>
+
+            {/* Metadatos Biologicos (Toxicidad, Solubilidad) */}
+            <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Activity size={18} /> Panel Biológico
+              </h4>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                  <span>Solubilidad</span>
+                  <span>{outputs.biological_data?.solubility_score?.toFixed(1) || 0}%</span>
+>>>>>>> FuncionesFabrizio
                 </div>
 
                 <div>
@@ -222,6 +239,7 @@ export default function JobResults() {
                 </div>
               </div>
 
+<<<<<<< HEAD
               {/* HPC Contabilidad */}
               <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <h4 style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -231,6 +249,18 @@ export default function JobResults() {
                   <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
                     <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Horas CPU</div>
                     <div style={{ fontWeight: 'bold' }}>{accounting?.cpu_hours?.toFixed(4) || "0.0000"}</div>
+=======
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '4px' }}>
+                  <span>Alertas de Toxicidad</span>
+                  <span style={{ color: outputs.biological_data?.toxicity_alerts?.length ? '#ff7d45' : '#65cbf3' }}>
+                    {outputs.biological_data?.toxicity_alerts?.length || 0}
+                  </span>
+                </div>
+                {outputs.biological_data?.toxicity_alerts?.map((alert: string, i: number) => (
+                  <div key={i} style={{ fontSize: '0.8rem', color: '#ff7d45', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <AlertTriangle size={12} /> {alert}
+>>>>>>> FuncionesFabrizio
                   </div>
                   <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
                     <div style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Horas GPU</div>
@@ -261,16 +291,7 @@ export default function JobResults() {
         </div>
       )}
 
-      {/* Tooltip Global */}
-      {tooltip && (
-        <div style={{
-          position: 'fixed', left: tooltip.x + 10, top: tooltip.y + 10,
-          background: 'rgba(0,0,0,0.9)', color: '#fff', padding: '6px 12px',
-          borderRadius: '4px', fontSize: '0.8rem', pointerEvents: 'none', zIndex: 9999, border: '1px solid var(--accent-cyan)'
-        }}>
-          {tooltip.text}
-        </div>
-      )}
+
     </div>
   );
 }
