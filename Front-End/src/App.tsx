@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Activity, LogOut } from 'lucide-react';
+import { Activity, LogOut, Sun, Moon } from 'lucide-react';
 import JobSubmit from './pages/JobSubmit';
 import JobResults from './pages/JobResults';
 import Auth from './pages/Auth';
@@ -14,6 +14,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, logout } = useAuth();
+  const [theme, setTheme] = React.useState('dark');
+
+  React.useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+  }, [theme]);
+
   return (
     <>
       <header className="app-header glass-panel">
@@ -22,8 +32,15 @@ function MainLayout({ children }: { children: React.ReactNode }) {
           <span className="gradient-text">LocalFold</span>
         </Link>
         <nav style={{ display: 'flex', alignItems: 'center' }}>
+          <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} className="btn-secondary" style={{ marginRight: '1rem', padding: '8px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          
           {isAuthenticated && (
             <>
+              <Link to="/saved" className="btn-secondary" style={{ marginRight: '1rem', border: 'none' }}>
+                Mis Células
+              </Link>
               <span style={{ color: 'var(--text-secondary)', marginRight: '1rem', fontSize: '0.9rem' }}>
                 Hola, {user?.name.split(' ')[0]}
               </span>
