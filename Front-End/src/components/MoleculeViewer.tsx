@@ -3,9 +3,94 @@ import { Maximize, Minimize } from 'lucide-react';
 
 interface Props {
   pdbData: string;
+  plddtData?: number[];
 }
 
-export default function MoleculeViewer({ pdbData }: Props) {
+const rewriteBFactors = (pdbString: string, plddtArray?: number[]) => {
+  if (!plddtArray || !plddtArray.length) return pdbString;
+  
+  const isCif = pdbString.trim().startsWith('data_');
+  const lines = pdbString.split('\n');
+  let resIndex = -1;
+  let currentUniqueRes = '';
+  let currentChain = '';
+  
+  if (isCif) {
+    let seqColIdx = -1, bColIdx = -1, chainColIdx = -1;
+    let colCounter = 0;
+    let inAtomSite = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      
+      if (trimmed.startsWith('_atom_site.')) {
+        inAtomSite = true;
+        if (trimmed === '_atom_site.label_seq_id') seqColIdx = colCounter;
+        if (trimmed === '_atom_site.B_iso_or_equiv') bColIdx = colCounter;
+        if (trimmed === '_atom_site.label_asym_id') chainColIdx = colCounter;
+        colCounter++;
+        continue;
+      }
+      
+      if (inAtomSite && (trimmed.startsWith('ATOM') || trimmed.startsWith('HETATM'))) {
+        const tokens = trimmed.split(/\s+/);
+        if (seqColIdx >= 0 && bColIdx >= 0) {
+           const seq = tokens[seqColIdx];
+           const chain = chainColIdx >= 0 ? tokens[chainColIdx] : '';
+           
+           if (chain !== currentChain) {
+             currentChain = chain;
+             resIndex = -1; // Reset para las proteínas multiméricas (homodímeros, etc.)
+           }
+           
+           const uniqueRes = chain + '_' + seq;
+           
+           if (uniqueRes !== currentUniqueRes) {
+             currentUniqueRes = uniqueRes;
+             resIndex++;
+           }
+           
+           // Si el array es más corto de lo esperado (ej. fallos en mock info), usamos módulo para repetir el patrón
+           // en lugar de anclarnos en el último valor y pintar todo del mismo color.
+           const safeIndex = resIndex % plddtArray.length;
+           tokens[bColIdx] = plddtArray[safeIndex].toFixed(2);
+           lines[i] = tokens.join(' ');
+        }
+      }
+    }
+  } else {
+    // Standard PDB rewriting
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      if (line.startsWith('ATOM  ') || line.startsWith('HETATM')) {
+        const chain = line.substring(21, 22);
+        const resSeq = line.substring(22, 26).trim();
+        
+        if (chain !== currentChain) {
+          currentChain = chain;
+          resIndex = -1;
+        }
+
+        const uniqueRes = chain + '_' + resSeq;
+        
+        if (uniqueRes !== currentUniqueRes) {
+          currentUniqueRes = uniqueRes;
+          resIndex++;
+        }
+        
+        const safeIndex = resIndex % plddtArray.length;
+        const plddt = plddtArray[safeIndex];
+        const bFactorStr = plddt.toFixed(2).padStart(6, ' ');
+        
+        if (line.length < 66) line = line.padEnd(66, ' ');
+        lines[i] = line.substring(0, 60) + bFactorStr + line.substring(66);
+      }
+    }
+  }
+  return lines.join('\n');
+};
+
+export default function MoleculeViewer({ pdbData, plddtData }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
   const viewerInstance = useRef<any>(null);
@@ -44,8 +129,14 @@ export default function MoleculeViewer({ pdbData }: Props) {
               .join('\n');
       }
 
-      // Detect format: PDB vs mmCIF (data_ is the standard start of a CIF file)
+      // Detect format: PDB vs mmCIF
       const isCIF = cleanedPdbData.trim().startsWith('data_');
+      
+      // Inject pLDDT B-factors if we have confidence data (Applies to both formats to match AF schema)
+      if (plddtData?.length) {
+        cleanedPdbData = rewriteBFactors(cleanedPdbData, plddtData);
+      }
+
       const format = isCIF ? 'mmcif' : 'pdb';
 
       // Create object URL from string content
@@ -57,7 +148,7 @@ export default function MoleculeViewer({ pdbData }: Props) {
           url: currentObjectUrl,
           format: format
         },
-        alphafoldView: !isSimulated, // Disable alphafoldView for fake structures so spacefill works properly
+        alphafoldView: true, // Always force AlphaFold view so it uses the standard confidence colors!
         bgColor: { r: 10, g: 10, b: 15 }, // #0a0a0f backgroundColor match
         hideControls: true,
         // Ocultamos el 'expand' nativo de Molstar para usar el nuestro de HTML5

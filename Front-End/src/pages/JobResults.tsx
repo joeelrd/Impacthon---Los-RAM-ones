@@ -238,8 +238,15 @@ export default function JobResults() {
     }
   };
 
-  const renderDataPanels = (biological_data: any, dataAccounting: any) => {
-    if (!biological_data && !dataAccounting) return null;
+  const renderDataPanels = (biological_data: any, dataAccounting: any, confidence_data?: any) => {
+    if (!biological_data && !dataAccounting && !confidence_data) return null;
+
+    const getPlddtColor = (val: number) => {
+      if (val >= 90) return '#3b82f6'; 
+      if (val >= 70) return '#38bdf8'; 
+      if (val >= 50) return '#eab308'; 
+      return '#f97316'; 
+    };
 
     // --- Criterio 5: Cálculos de FinOps y Sostenibilidad ---
     let gpuConsumo = dataAccounting?.gpu_hours || 0;
@@ -257,6 +264,66 @@ export default function JobResults() {
 
     return (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', width: '100%' }}>
+        
+        {/* Panel Confianza Estructural pLDDT */}
+        {confidence_data && (
+          <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <h4 style={{ color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShieldCheck size={18} /> Confianza de Predicción (pLDDT)
+            </h4>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', flexWrap: 'wrap' }}>
+              {/* Media Global */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                  Fiabilidad Media
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '50%', width: '110px', height: '110px', border: `4px solid ${getPlddtColor(confidence_data.plddt_mean || 0)}` }}>
+                  <span style={{ fontSize: '2.2rem', fontWeight: 800, color: getPlddtColor(confidence_data.plddt_mean || 0) }}>
+                    {confidence_data.plddt_mean?.toFixed(1) || 0}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>/ 100</span>
+                </div>
+              </div>
+
+              {/* Distribución de residuos */}
+              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                  Calidad por Residuo
+                </div>
+                {[
+                  { label: 'Muy Alta (>90)', val: confidence_data.plddt_histogram?.very_high || 0, color: '#3b82f6' },
+                  { label: 'Alta (70-90)',  val: confidence_data.plddt_histogram?.high || 0, color: '#38bdf8' },
+                  { label: 'Media (50-70)',  val: confidence_data.plddt_histogram?.medium || 0, color: '#eab308' },
+                  { label: 'Baja (<50)', val: confidence_data.plddt_histogram?.low || 0, color: '#f97316' },
+                ].map(({ label, val, color }) => {
+                  const total = (confidence_data.plddt_histogram?.very_high || 0) + (confidence_data.plddt_histogram?.high || 0) + (confidence_data.plddt_histogram?.medium || 0) + (confidence_data.plddt_histogram?.low || 0);
+                  const pct = total > 0 ? (val / total) * 100 : 0;
+                  return (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ width: '105px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{label}</span>
+                      <div style={{ flex: 1, background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px' }}>
+                        <div style={{ width: `${pct}%`, background: color, height: '100%', borderRadius: '3px', boxShadow: `0 0 8px ${color}80` }} />
+                      </div>
+                      <span style={{ width: '35px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 600, color }}>{val}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Disclaimer para bajas puntuaciones */}
+            {(confidence_data.plddt_mean || 100) < 70 && (
+               <div style={{ fontSize: '0.85rem', color: '#facc15', marginTop: '0.5rem', display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '12px', background: 'rgba(234, 179, 8, 0.1)', borderRadius: '8px', border: '1px solid rgba(234, 179, 8, 0.2)' }}>
+                  <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '2px' }} /> 
+                  <span style={{ lineHeight: '1.5' }}>
+                    <strong>Atención:</strong> La predicción global tiene una fiabilidad media/baja. Esto suele darse en proteínas con <em>regiones intrínsecamente desordenadas (IDR)</em> sin estructura fija aislada, o en secuencias sin suficientes homólogos evolutivos conocidos en las bases de datos.
+                  </span>
+               </div>
+            )}
+          </div>
+        )}
+
         {/* Panel Biológico */}
         <div style={{ background: 'var(--bg-surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <h4 style={{ color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -544,12 +611,15 @@ export default function JobResults() {
               )}
 
               <div style={{ height: '550px' }}>
-                <MoleculeViewer pdbData={outputs.structural_data.pdb_file} />
+                <MoleculeViewer 
+                  pdbData={outputs.structural_data.pdb_file} 
+                  plddtData={outputs.structural_data?.confidence?.plddt_per_residue}
+                />
               </div>
             </div>
 
             {/* Paneles de Datos Renderizados */}
-            {renderDataPanels(outputs.biological_data, accounting)}
+            {renderDataPanels(outputs.biological_data, accounting, outputs.structural_data?.confidence)}
           </div>
         )}
       </div>
@@ -653,13 +723,16 @@ export default function JobResults() {
                   </h3>
                 </div>
                 <div style={{ height: '550px' }}>
-                  <MoleculeViewer pdbData={compareOutputs.structural_data.pdb_file} />
+                  <MoleculeViewer 
+                    pdbData={compareOutputs.structural_data.pdb_file} 
+                    plddtData={compareOutputs.structural_data?.confidence?.plddt_per_residue}
+                  />
                 </div>
               </div>
               
               {/* Paneles de Datos de la Comparación */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1 }}>
-                {renderDataPanels(compareOutputs.biological_data, compareAccounting)}
+                {renderDataPanels(compareOutputs.biological_data, compareAccounting, compareOutputs.structural_data?.confidence)}
                 
                 <div style={{ marginTop: 'auto' }}>
                   <button onClick={() => { setCompareStatus('IDLE'); setCompareFasta(''); }} className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
