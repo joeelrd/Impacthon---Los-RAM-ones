@@ -541,6 +541,23 @@ export async function generateGAIVEReport(input: GAIVEReportInput): Promise<void
     y += 26;
   }
 
+  // ── SECTION 7: PAE (Predicted Aligned Error) Analysis ──────────────────────
+  if (outputs.structural_data?.confidence?.pae_matrix) {
+    if (y > H - 80) { doc.addPage(); fillPage(doc, C.white); miniHeader(doc, jobId); y = 16; }
+    y = sectionTitle(doc, '7. Análisis de Error Alineado Esperado (PAE)', y);
+    
+    card(doc, M, y, CW, 30, C.cardBg, C.border);
+    st(doc, C.textSub); doc.setFontSize(8.5);
+    const paeDesc = "La matriz PAE mide la incertidumbre en la posición relativa de los residuos. Las distancias bajas (azules) indican dominios rígidos confiables, mientras que las altas sugieren flexibilidad o incertidumbre en la orientación inter-dominio.";
+    const paeLines = doc.splitTextToSize(paeDesc, CW - 12);
+    doc.text(paeLines, M + 6, y + 8);
+    
+    const avgPae = outputs.structural_data.confidence.pae_mean || 0;
+    y += 34;
+    kv(doc, 'Error Medio Global (PAE)', avgPae.toFixed(2) + ' Å', M, y, avgPae < 10 ? C.green : C.orange);
+    y += 8;
+  }
+
   // ── Footer/QR ───────────────────────────────────────────────────────────────
   if (y > H-52) { doc.addPage(); fillPage(doc,C.white); miniHeader(doc,jobId); y=16; }
 
