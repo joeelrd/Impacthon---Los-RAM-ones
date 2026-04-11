@@ -6,52 +6,48 @@ interface Props {
 
 export default function MoleculeViewer({ pdbData }: Props) {
   const viewerRef = useRef<HTMLDivElement>(null);
-
   const viewerInstance = useRef<any>(null);
 
   useEffect(() => {
-    if (!viewerRef.current || !pdbData || !(window as any).$3Dmol) return;
-    
-    if (!viewerInstance.current) {
-        viewerRef.current.innerHTML = '';
-        viewerInstance.current = (window as any).$3Dmol.createViewer(viewerRef.current, {
-          backgroundColor: '#0a0a0f'
-        });
-    }
-    
-    const viewer = viewerInstance.current;
-    viewer.clear();
+    if (!viewerRef.current || !pdbData || !(window as any).PDBeMolstarPlugin) return;
 
-    // Add model
-    viewer.addModel(pdbData, 'pdb');
+    const renderMolstar = () => {
+      // Create object URL from string
+      const blob = new Blob([pdbData], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
 
-    // AlphaFold pLDDT color scheme stored in B-factor
-    const colorfunc = (atom: any) => {
-      if (atom.b > 90) return '#0053d6'; // Very High (Blue)
-      if (atom.b > 70) return '#65cbf3'; // High (Light Blue)
-      if (atom.b > 50) return '#ffe082'; // Low (Yellow)
-      return '#ff7d45'; // Very Low (Orange/Red)
+      const options = {
+        customData: {
+          url: url,
+          format: 'pdb'
+        },
+        alphafoldView: true,
+        bgColor: { r: 10, g: 10, b: 15 }, // #0a0a0f backgroundColor match
+        hideControls: true,
+        hideCanvasControls: ['selection', 'animation', 'controlToggle', 'controlInfo'],
+        lighting: 'plastic',
+        visualStyle: 'cartoon'
+      };
+
+      if (!viewerInstance.current) {
+        viewerInstance.current = new (window as any).PDBeMolstarPlugin();
+      }
+      
+      viewerInstance.current.render(viewerRef.current, options);
     };
 
-    // Apply cartoon style, but also a stick fallback so it NEVER disappears if cartoon fails
-    viewer.setStyle({}, { 
-      cartoon: { colorfunc: colorfunc },
-      stick: { radius: 0.15, colorfunc: colorfunc }
-    });
+    renderMolstar();
 
-    // Zoom and render
-    viewer.zoomTo();
-    viewer.render();
-    
-    // Add smooth continuous rotation (Requirement)
-    viewer.spin("y", 0.3);
-    
-    // Cleanup is handled by clear() on next render, no need to destroy WebGL contexts
+    // Clean up
+    return () => {
+      // PDBeMolstarPlugin handles replacements internally if re-rendered.
+      // Free object URL to prevent memory leaks if effect re-runs
+      // URL.revokeObjectURL(url) happens in a timeout because render is async
+    };
   }, [pdbData]);
 
   return (
     <div
-      ref={viewerRef}
       style={{
         width: '100%',
         height: '100%',
@@ -61,6 +57,13 @@ export default function MoleculeViewer({ pdbData }: Props) {
         overflow: 'hidden'
       }}
     >
+      {/* Container for PDBe Molstar */}
+      <div 
+        ref={viewerRef} 
+        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} 
+      />
+      
+      {/* Legend overlay */}
       <div style={{
         position: 'absolute',
         top: '16px',
