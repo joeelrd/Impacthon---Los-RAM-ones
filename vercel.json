@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "build.gradle",
+      "use": "@vercel/java"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ]
+}
