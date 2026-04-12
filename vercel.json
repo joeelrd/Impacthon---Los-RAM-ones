@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "Front-End",
   "framework": "vite",
   "routes": [
     { "handle": "filesystem" },
