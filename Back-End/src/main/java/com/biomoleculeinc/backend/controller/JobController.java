@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/jobs")
-@CrossOrigin(origins = "*")
 public class JobController {
 
     private final CesgaService cesgaService;

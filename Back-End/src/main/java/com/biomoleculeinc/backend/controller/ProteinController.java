@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/proteins")
-@CrossOrigin(origins = "http://localhost:5173") // Asumiendo que React corre en puerto 5173
 public class ProteinController {
 
     @Autowired
