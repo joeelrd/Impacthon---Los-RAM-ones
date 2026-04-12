@@ -11,7 +11,7 @@ import {
   ShieldCheck, Activity, Cpu, ArrowLeft, Download, AlertTriangle,
   Bookmark, BookmarkCheck, X, Crown, Trash2, Loader2,
   SplitSquareHorizontal, Send, Leaf, CircleDollarSign, Zap, FileText,
-  ExternalLink, Globe, Database, FlaskConical, List
+  Database, List
 } from 'lucide-react';
 
 interface LimitInfo {

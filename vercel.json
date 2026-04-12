@@ -1,14 +1,9 @@
 {
-  "builds": [
-    {
-      "src": "build.gradle",
-      "use": "@vercel/java"
-    }
-  ],
+  "buildCommand": "cd Front-End && pnpm install && pnpm build",
+  "outputDirectory": "Front-End/dist",
+  "framework": "vite",
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

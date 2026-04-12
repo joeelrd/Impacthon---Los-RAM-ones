@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/saved-proteins")
-@CrossOrigin(origins = "*")
 public class SavedProteinController {
 
     private static final int FREE_LIMIT = 8;
