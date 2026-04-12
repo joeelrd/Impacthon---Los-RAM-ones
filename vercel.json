@@ -1,7 +1,5 @@
 {
-  "installCommand": "cd Front-End && npm install",
-  "buildCommand": "cd Front-End && npm run build",
-  "outputDirectory": "Front-End/dist",
+  "rootDirectory": "Front-End",
   "framework": "vite",
   "routes": [
     { "handle": "filesystem" },
