@@ -1,6 +1,8 @@
 {
   "framework": "vite",
-  "installCommand": "npm install --include=dev",
+  "installCommand": "cd Front-End && npm install --include=dev",
+  "buildCommand": "cd Front-End && npm run build",
+  "outputDirectory": "Front-End/dist",
   "routes": [
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
