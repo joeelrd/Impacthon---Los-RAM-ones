@@ -1,5 +1,6 @@
 {
-  "buildCommand": "cd Front-End && pnpm install && pnpm build",
+  "installCommand": "cd Front-End && npm install",
+  "buildCommand": "cd Front-End && npm run build",
   "outputDirectory": "Front-End/dist",
   "framework": "vite",
   "routes": [
