@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="./logo.png" alt="BioMolecules Inc Logo" width="300" style="border-radius: 20px; margin-bottom: 20px;" />
+  <img src="./logo.png" alt="BioMolecule Inc Logo" width="300" style="border-radius: 20px; margin-bottom: 20px;" />
 
-  # BioMolecules Inc
+  # BioMolecule Inc
   
   **Transformando la predicción estructural de proteínas en una experiencia accesible, rápida y visual.**
   
@@ -17,12 +17,12 @@ Somos **Los RAM-ones**, un equipo multidisciplinar participando en el **Impactho
 ## 💡 ¿Qué solución proponemos?
 Actualmente, el uso de herramientas punteras de predicción como AlphaFold requiere altos conocimientos técnicos: manejo de terminales bash, conexión a clústeres remotos por SSH, scripting, y una espera a ciegas sin conocer de antemano los tiempos de cómputo o los costes operativos (cloud/FinOps).
 
-**BioMolecules Inc** es una plataforma web Full-Stack diseñada desde cero para eliminar esta brecha de complejidad. Proporcionamos una interfaz gráfica (GUI) premium e intuitiva que permite a cualquier investigador:
+**BioMolecule Inc** es una plataforma web Full-Stack diseñada desde cero para eliminar esta brecha de complejidad. Proporcionamos una interfaz gráfica (GUI) premium e intuitiva que permite a cualquier investigador:
 - Enviar secuencias FASTA simplemente copiando y pegando o subiendo archivos, sin tocar la línea de comandos.
 - Visualizar interactivamente modelos atómicos 3D avanzados directamente desde cualquier navegador web.
 - Entender el contexto biológico, el coste computacional y las métricas de fiabilidad en un panel unificado de nueva generación.
 
-## ⚙️ ¿Qué hace BioMolecules Inc? (Características Principales)
+## ⚙️ ¿Qué hace BioMolecule Inc? (Características Principales)
 - **🧠 Predicción de Estructuras (AlphaFold Wrapper):** Conexión automatizada al motor de predicción que genera coordenadas estructurales a partir de secuencias primarias.
 - **🔬 Visualizador 3D Avanzado (Mol*):** Renderizado gráfico molecular embebido, permitiendo estudiar dominios, regiones intrínsecamente desordenadas (IDR) y superposiciones sin instalar software de terceros.
 - **📊 Análisis de Confianza Estructural (pLDDT):** Algoritmos nativos en el frontend que analizan e inyectan los niveles de fiabilidad (pLDDT) de la IA en los átomos del modelo 3D en tiempo real, mostrándolo visualmente junto a gráficas de calidad por residuo.
