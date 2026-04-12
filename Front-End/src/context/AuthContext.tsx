@@ -31,12 +31,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('localfold_user');
+        const storedUser = localStorage.getItem('biomolecule_inc_user');
         if (storedUser) {
             try {
                 setUser(JSON.parse(storedUser));
             } catch (e) {
-                localStorage.removeItem('localfold_user');
+                localStorage.removeItem('biomolecule_inc_user');
             }
         }
         setLoading(false);
@@ -44,12 +44,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = (userData: AuthUser) => {
         setUser(userData);
-        localStorage.setItem('localfold_user', JSON.stringify(userData));
+        localStorage.setItem('biomolecule_inc_user', JSON.stringify(userData));
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('localfold_user');
+        localStorage.removeItem('biomolecule_inc_user');
     };
 
     return (

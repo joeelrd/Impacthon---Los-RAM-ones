@@ -15,10 +15,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, logout } = useAuth();
-  const [theme, setTheme] = React.useState(() => localStorage.getItem('localfold_theme') || 'dark');
+  const [theme, setTheme] = React.useState(() => localStorage.getItem('biomolecule_inc_theme') || 'dark');
 
   React.useEffect(() => {
-    localStorage.setItem('localfold_theme', theme);
+    localStorage.setItem('biomolecule_inc_theme', theme);
     if (theme === 'light') {
       document.body.classList.add('light-mode');
     } else {
@@ -31,7 +31,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
       <header className="app-header glass-panel">
         <Link to="/" className="app-logo">
           <Activity color="#00f2fe" size={28} />
-          <span className="gradient-text">LocalFold</span>
+          <span className="gradient-text">BioMolecule Inc</span>
         </Link>
         <nav style={{ display: 'flex', alignItems: 'center' }}>
           <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} className="btn-secondary" style={{ marginRight: '1rem', padding: '8px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
